@@ -1,8 +1,11 @@
+DROP SCHEMA public CASCADE;
+CREATE SCHEMA public;
+
 CREATE TABLE IF NOT EXISTS product
 (
     product_id              SERIAL PRIMARY KEY,
     product_title           TEXT NOT NULL,
-    product_year            DATE, -- only year?
+    product_year            smallint check (product_year between 0 and extract(year from current_date)),
     media_format_id         INT  NOT NULL,
     product_link_to_emedia  TEXT,
     product_age_restriction INT,
@@ -60,7 +63,7 @@ CREATE TABLE IF NOT EXISTS language_relation
 
 CREATE TABLE IF NOT EXISTS language_type
 (
-    language_type_id   INT PRIMARY KEY,
+    language_type_id   SERIAL PRIMARY KEY,
     language_type_name TEXT NOT NULL
 );
 
@@ -106,7 +109,7 @@ CREATE TABLE IF NOT EXISTS library
     library_description TEXT
 );
 
-CREATE TABLE IF NOT EXISTS location
+CREATE TABLE IF NOT EXISTS item_location
 (
     item_id             INT NOT NULL,
     library_id          INT NOT NULL,
@@ -138,7 +141,7 @@ CREATE TYPE client_status AS ENUM ('active', 'inactive', 'warning', 'banned');
 
 CREATE TABLE IF NOT EXISTS client_relation
 (
-    client_id             INT           UNIQUE NOT NULL,
+    client_id             INT UNIQUE    NOT NULL,
     client_status         client_status NOT NULL DEFAULT 'inactive',
     borrowed_items_amount INT CHECK (borrowed_items_amount <= 5 AND borrowed_items_amount >= 0), -- update after each borrow
     penalty_balance       DECIMAL(10, 2)
@@ -198,10 +201,10 @@ ALTER TABLE creator_relation
 ALTER TABLE creator_relation
     ADD FOREIGN KEY (role_id) REFERENCES creator_role (role_id);
 
-ALTER TABLE location
+ALTER TABLE item_location
     ADD FOREIGN KEY (item_id) REFERENCES product_item (item_id);
 
-ALTER TABLE location
+ALTER TABLE item_location
     ADD FOREIGN KEY (library_id) REFERENCES library (library_id);
 
 ALTER TABLE library_address
