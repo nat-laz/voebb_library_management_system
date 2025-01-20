@@ -80,8 +80,8 @@ CREATE TABLE IF NOT EXISTS country_relation
 CREATE TABLE IF NOT EXISTS creator
 (
     creator_id       SERIAL PRIMARY KEY,
-    creator_forename INT NOT NULL,
-    creator_lastname INT NOT NULL
+    creator_forename TEXT NOT NULL,
+    creator_lastname TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS creator_relation
