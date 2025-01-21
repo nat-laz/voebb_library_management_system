@@ -214,29 +214,32 @@ VALUES ('book', '14'),
        ('dvd_film', '14'),
        ('board_game', '28');
 
-INSERT INTO product (product_title, product_year, media_format_id)
-VALUES ('Harry Potter and the Philosopher Stone', 1997, 1), -- J.K. Rowling
-       ('1984', 1949, 1),                                   -- George Orwell
-       ('Pride and Prejudice', 1813, 1),                    -- Jane Austen
-       ('The Adventures of Tom Sawyer', 1876, 1),           -- Mark Twain
-       ('To Kill a Mockingbird', 1960, 1),                  -- Harper Lee
-       ('The Hobbit', 1937, 1),                             -- J.R.R. Tolkien
-       ('The Great Gatsby', 1925, 1),                       -- F. Scott Fitzgerald
-       ('A Tale of Two Cities', 1859, 1),                   -- Charles Dickens
-       ('The Old Man and the Sea', 1952, 1),                -- Ernest Hemingway
-       ('Mrs Dalloway', 1925, 1);
+INSERT INTO product (product_title, product_year, media_format_id, product_link_to_emedia)
+VALUES ('Harry Potter and the Philosopher Stone', 1997, 1, NULL), -- J.K. Rowling
+       ('1984', 1949, 1, NULL),                                   -- George Orwell
+       ('Pride and Prejudice', 1813, 1, NULL),                    -- Jane Austen
+       ('The Adventures of Tom Sawyer', 1876, 1, NULL),           -- Mark Twain
+       ('To Kill a Mockingbird', 1960, 1, NULL),                  -- Harper Lee
+       ('The Hobbit', 1937, 1, NULL),                             -- J.R.R. Tolkien
+       ('The Great Gatsby', 1925, 1, NULL),                       -- F. Scott Fitzgerald
+       ('A Tale of Two Cities', 1859, 1, NULL),                   -- Charles Dickens
+       ('The Old Man and the Sea', 1952, 1, NULL),                -- Ernest Hemingway
+       ('Mrs Dalloway', 1925, 1, NULL),
+       ('1984', 1949, 2, 'direct link to e-media'); -- George Orwell (e-book)
+
 
 INSERT INTO book (product_id, book_pages)
-VALUES (1, 223), -- J.K. Rowling
-       (2, 328), -- George Orwell
-       (3, 279), -- Jane Austen
-       (4, 274), -- Mark Twain
-       (5, 281), -- Harper Lee
-       (6, 310), -- J.R.R. Tolkien
-       (7, 218), -- F. Scott Fitzgerald
-       (8, 489), -- Charles Dickens
-       (9, 127), -- Ernest Hemingway
-       (10, 194); -- Virginia Woolf
+VALUES (1, 223),  -- J.K. Rowling
+       (2, 328),  -- George Orwell
+       (3, 279),  -- Jane Austen
+       (4, 274),  -- Mark Twain
+       (5, 281),  -- Harper Lee
+       (6, 310),  -- J.R.R. Tolkien
+       (7, 218),  -- F. Scott Fitzgerald
+       (8, 489),  -- Charles Dickens
+       (9, 127),  -- Ernest Hemingway
+       (10, 194), -- Virginia Woolf
+       (11, 328); -- George Orwell
 
 INSERT INTO creator_role (role_name)
 VALUES ('director'),
@@ -255,7 +258,8 @@ VALUES (1, 1, 2),
        (7, 7, 2),
        (8, 8, 2),
        (9, 9, 2),
-       (10, 10, 2);
+       (10, 10, 2),
+       (2, 11, 2);
 
 INSERT INTO language (language_name)
 VALUES ('English'),
@@ -327,7 +331,8 @@ VALUES (1, 1, 1),
        (7, 1, 1),
        (8, 1, 1),
        (9, 1, 1),
-       (10, 1, 1);
+       (10, 1, 1),
+       (11, 1, 2);
 
 INSERT INTO item_status (item_status_name)
 VALUES ('available'),
@@ -404,7 +409,9 @@ VALUES (1, 1),
 
        (9, 1),
 
-       (10, 1);
+       (10, 1),
+
+       (11, 1);
 
 
 INSERT INTO item_location (item_id, library_id)
