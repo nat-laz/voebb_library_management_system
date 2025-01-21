@@ -24,15 +24,17 @@ CREATE TABLE IF NOT EXISTS media_format
 
 CREATE TABLE IF NOT EXISTS book
 (
+    product_id INT NOT NULL,
     book_isbn    TEXT,
     book_pages   INT,
     book_edition TEXT
-) INHERITS (product);
+);
 
 CREATE TABLE IF NOT EXISTS video
 (
+    product_id INT NOT NULL UNIQUE,
     video_duration_in_minutes INT
-) INHERITS (product);
+);
 
 CREATE TABLE IF NOT EXISTS product_item
 (
@@ -170,6 +172,12 @@ CREATE TABLE IF NOT EXISTS reservation
 
 ALTER TABLE product
     ADD FOREIGN KEY (media_format_id) REFERENCES media_format (media_format_id);
+
+ALTER TABLE book
+    ADD FOREIGN KEY (product_id) REFERENCES product (product_id);
+
+ALTER TABLE video
+    ADD FOREIGN KEY (product_id) REFERENCES product (product_id);
 
 ALTER TABLE product_item
     ADD FOREIGN KEY (product_id) REFERENCES product (product_id);
