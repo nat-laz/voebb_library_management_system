@@ -204,13 +204,20 @@ VALUES ('J.K.', 'Rowling'),
        ('F. Scott', 'Fitzgerald'),
        ('Charles', 'Dickens'),
        ('Ernest', 'Hemingway'),
-       ('Virginia', 'Woolf');
+       ('Virginia', 'Woolf'),
+       ('Joshua', 'Bloch'),     -- Author of Effective Java
+       ('Herbert', 'Schildt'),  -- Author of Java: The Complete Reference
+       ('Kathy', 'Sierra'),     -- Co-author of Head First Java
+       ('Bert', 'Bates'),       -- Co-author of Head First Java
+       ('Brian', 'Goetz'),      -- Author of Java Concurrency in Practice
+       ('Cay S.', 'Horstmann'), -- Co-author of Core Java Volume I: Fundamentals
+       ('Gary', 'Cornell'); -- Co-author of Core Java Volume I: Fundamentals
+;
 
 INSERT INTO media_format (media_format_name, borrow_duration_days)
 VALUES ('book', '14'),
        ('e-book', '28'),
-       ('video', '14'), -- lesson, course
-       ('movie', '14'),
+       ('video', '14'), -- lesson, course, video
        ('dvd_film', '14'),
        ('board_game', '28');
 
@@ -246,7 +253,8 @@ VALUES ('director'),
        ('author'),
        ('translator'),
        ('director'),
-       ('compositor');
+       ('compositor'),
+       ('co-author');
 
 INSERT INTO creator_relation(creator_id, product_id, role_id)
 VALUES (1, 1, 2),
@@ -460,3 +468,28 @@ VALUES (1, 3),
        (43, 3),
        (44, 1),
        (45, 4);
+
+INSERT INTO country_relation (country_id, product_id)
+VALUES
+-- Harry Potter and the Philosopher Stone
+((SELECT country_id FROM country WHERE country_name = 'United Kingdom'), 1),
+-- 1984
+((SELECT country_id FROM country WHERE country_name = 'United Kingdom'), 2),
+((SELECT country_id FROM country WHERE country_name = 'United Kingdom'), 11), -- e-book version
+-- Pride and Prejudice
+((SELECT country_id FROM country WHERE country_name = 'United Kingdom'), 3),
+-- The Adventures of Tom Sawyer
+((SELECT country_id FROM country WHERE country_name = 'United States of America'), 4),
+-- To Kill a Mockingbird
+((SELECT country_id FROM country WHERE country_name = 'United States of America'), 5),
+-- The Hobbit
+((SELECT country_id FROM country WHERE country_name = 'United Kingdom'), 6),
+-- The Great Gatsby
+((SELECT country_id FROM country WHERE country_name = 'United States of America'), 7),
+-- A Tale of Two Cities
+((SELECT country_id FROM country WHERE country_name = 'United Kingdom'), 8),
+((SELECT country_id FROM country WHERE country_name = 'France'), 8),
+-- The Old Man and the Sea
+((SELECT country_id FROM country WHERE country_name = 'United States of America'), 9),
+-- Mrs Dalloway
+((SELECT country_id FROM country WHERE country_name = 'United Kingdom'), 10);
