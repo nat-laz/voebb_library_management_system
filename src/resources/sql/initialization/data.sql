@@ -209,8 +209,7 @@ VALUES ('J.K.', 'Rowling'),
 INSERT INTO media_format (media_format_name, borrow_duration_days)
 VALUES ('book', '14'),
        ('e-book', '28'),
-       ('video', '14'), -- lesson, course
-       ('movie', '14'),
+       ('video', '14'), -- lesson, course, movie
        ('dvd_film', '14'),
        ('board_game', '28');
 
