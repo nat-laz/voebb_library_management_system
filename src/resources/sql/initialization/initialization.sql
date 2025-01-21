@@ -13,13 +13,11 @@ CREATE TABLE IF NOT EXISTS product
     product_note            TEXT
 );
 
-CREATE TYPE borrow_duration_days AS ENUM ('14', '28');
-
 CREATE TABLE IF NOT EXISTS media_format
 (
     media_format_id      SERIAL PRIMARY KEY,
     media_format_name    TEXT                 NOT NULL,
-    borrow_duration_days borrow_duration_days NOT NULL
+    borrow_duration_days INT NOT NULL CHECK (borrow_duration_days IN (14, 28))
 );
 
 CREATE TABLE IF NOT EXISTS book
