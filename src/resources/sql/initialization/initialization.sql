@@ -25,7 +25,8 @@ CREATE TABLE IF NOT EXISTS book
     product_id INT NOT NULL,
     book_isbn    TEXT,
     book_pages   INT,
-    book_edition TEXT
+    book_edition TEXT,
+    book_publisher TEXT
 );
 
 CREATE TABLE IF NOT EXISTS video
@@ -70,7 +71,7 @@ CREATE TABLE IF NOT EXISTS language_type
 CREATE TABLE IF NOT EXISTS country
 (
     country_id   SERIAL PRIMARY KEY,
-    country_name TEXT NOT NULL
+    country_name TEXT NOT NULL UNIQUE
 );
 
 CREATE TABLE IF NOT EXISTS country_relation
@@ -153,9 +154,9 @@ CREATE TABLE IF NOT EXISTS borrow
     item_id           INT  NOT NULL,
     borrow_start_date DATE NOT NULL DEFAULT CURRENT_DATE,
     borrow_due_date   DATE NOT NULL, -- set update based on how many days the item can be borrowed; update if user extends
-    return_date       DATE,
-    extends           INT           DEFAULT 0 CHECK ( extends >= 0 AND extends <= 3),
-    PRIMARY KEY (client_id, item_id)
+    borrow_return_date       DATE,
+    borrow_extends           INT           DEFAULT 0 CHECK ( borrow_extends >= 0 AND borrow_extends <= 3),
+    PRIMARY KEY (client_id, item_id, borrow_start_date)
 );
 
 
@@ -164,8 +165,8 @@ CREATE TABLE IF NOT EXISTS reservation
     client_id              INT  NOT NULL,
     item_id                INT  NOT NULL,
     reservation_start_date DATE NOT NULL DEFAULT CURRENT_DATE,
-    reservation_due_date   DATE NOT NULL,
-    PRIMARY KEY (client_id, item_id)
+    reservation_due_date   DATE NOT NULL DEFAULT CURRENT_DATE + INTERVAL '3 days',
+    PRIMARY KEY (client_id, item_id, reservation_start_date)
 );
 
 ALTER TABLE product
