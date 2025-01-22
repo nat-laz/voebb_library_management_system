@@ -11,6 +11,10 @@ BEGIN
                 UPDATE product_item
                 SET item_status_id = 1
                 WHERE product_item.item_id = record_reservation.item_id;
+
+                -- delete record from reservation
+                DELETE FROM reservation
+                WHERE reservation.item_id = record_reservation.item_id;
             END IF;
         END LOOP;
 END;
