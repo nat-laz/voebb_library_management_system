@@ -1,4 +1,7 @@
 -- CHECK RESERVATION TABLE
+SELECT * FROM reservation;
+
+-- CHECK RESERVATION TABLE MORE DETAILS
 SELECT reservation.client_id,
        product_item.item_id,
        concat(client.client_forename || ' ' || client.client_lastname, ', ') AS creator_full_name,
