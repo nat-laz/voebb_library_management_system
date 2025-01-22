@@ -156,7 +156,7 @@ CREATE TABLE IF NOT EXISTS borrow
     borrow_due_date   DATE NOT NULL, -- set update based on how many days the item can be borrowed; update if user extends
     borrow_return_date       DATE,
     borrow_extends           INT           DEFAULT 0 CHECK ( borrow_extends >= 0 AND borrow_extends <= 3),
-    PRIMARY KEY (client_id, item_id)
+    PRIMARY KEY (client_id, item_id, borrow_start_date)
 );
 
 
@@ -165,8 +165,8 @@ CREATE TABLE IF NOT EXISTS reservation
     client_id              INT  NOT NULL,
     item_id                INT  NOT NULL,
     reservation_start_date DATE NOT NULL DEFAULT CURRENT_DATE,
-    reservation_due_date   DATE NOT NULL,
-    PRIMARY KEY (client_id, item_id)
+    reservation_due_date   DATE NOT NULL DEFAULT CURRENT_DATE + INTERVAL '3 days',
+    PRIMARY KEY (client_id, item_id, reservation_start_date)
 );
 
 ALTER TABLE product

@@ -4,7 +4,7 @@ $$
         v_item_id INT := ?;
 
     BEGIN
-        IF exists(select item_id from borrow where item_id = v_item_id and borrow_return_date is null)
+        IF EXISTS(SELECT item_id FROM borrow WHERE item_id = v_item_id AND borrow_return_date IS NULL)
         THEN
             UPDATE borrow
             SET borrow_return_date = CURRENT_DATE

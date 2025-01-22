@@ -3,6 +3,7 @@
   <component name="SqlDialectMappings">
     <file url="file://$PROJECT_DIR$/src/resources/sql/borrow_or_reserve/borrow_item_transaction.sql" dialect="PostgreSQL" />
     <file url="file://$PROJECT_DIR$/src/resources/sql/borrow_or_reserve/borrowing.sql" dialect="PostgreSQL" />
+    <file url="file://$PROJECT_DIR$/src/resources/sql/borrow_or_reserve/reserve_item_transaction.sql" dialect="PostgreSQL" />
     <file url="file://$PROJECT_DIR$/src/resources/sql/borrow_or_reserve/return_item_transaction.sql" dialect="PostgreSQL" />
     <file url="file://$PROJECT_DIR$/src/resources/sql/borrow_or_reserve/show_borrow_history.sql" dialect="PostgreSQL" />
     <file url="file://$PROJECT_DIR$/src/resources/sql/borrow_or_reserve/update_borrow_due_date_script.sql" dialect="PostgreSQL" />
