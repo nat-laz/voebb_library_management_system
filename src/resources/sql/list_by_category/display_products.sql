@@ -1,4 +1,6 @@
-select product.product_id,
+-- Search by title and media_type
+
+explain analyse select product.product_id,
        case
            when MIN(item_status.item_status_id) = 1
                then 'true' end as avaliable,
@@ -24,6 +26,6 @@ WHERE product.media_format_id = ?
   AND product.product_title ilike ?
 group by product.product_id, product.product_title, creator_forename, creator_lastname, product.product_year,
          product.product_photo_link, item_status.item_status_id, media_format.media_format_name
-limit 10 offset ?;
+limit 22 offset ?;
 
 select * from media_format;
