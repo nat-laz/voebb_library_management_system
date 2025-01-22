@@ -21,7 +21,7 @@ $$
 
         -- Change status for item
         UPDATE product_item
-        SET item_status_id = 1
+        SET item_status_id = 2
         WHERE product_item.item_id = v_item_id;
     END
 $$;
