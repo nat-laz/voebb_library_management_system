@@ -20,7 +20,7 @@ from product
          join item_status on product_item.item_status_id = item_status.item_status_id
          join item_location on product_item.item_id = item_location.item_id
          join library on item_location.library_id = library.library_id
-WHERE product.media_format_id = ?
+WHERE product.media_format_id = ? -- here maybe better media_format_name
   AND product.product_title ilike ?
 group by product.product_id, product.product_title, creator_forename, creator_lastname, product.product_year,
          product.product_photo_link, item_status.item_status_id, media_format.media_format_name
