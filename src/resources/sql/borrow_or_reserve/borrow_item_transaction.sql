@@ -25,3 +25,4 @@ $$
         WHERE product_item.item_id = v_item_id;
     END
 $$;
+
