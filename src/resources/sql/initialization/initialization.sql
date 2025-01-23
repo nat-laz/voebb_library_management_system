@@ -16,22 +16,22 @@ CREATE TABLE IF NOT EXISTS product
 CREATE TABLE IF NOT EXISTS media_format
 (
     media_format_id      SERIAL PRIMARY KEY,
-    media_format_name    TEXT                 NOT NULL,
-    borrow_duration_days INT NOT NULL CHECK (borrow_duration_days IN (14, 28))
+    media_format_name    TEXT NOT NULL,
+    borrow_duration_days INT  NOT NULL CHECK (borrow_duration_days IN (14, 28))
 );
 
 CREATE TABLE IF NOT EXISTS book
 (
-    product_id INT NOT NULL,
-    book_isbn    TEXT,
-    book_pages   INT,
-    book_edition TEXT,
+    product_id     INT NOT NULL,
+    book_isbn      TEXT,
+    book_pages     INT,
+    book_edition   TEXT,
     book_publisher TEXT
 );
 
 CREATE TABLE IF NOT EXISTS video
 (
-    product_id INT NOT NULL UNIQUE,
+    product_id                INT NOT NULL UNIQUE,
     video_duration_in_minutes INT
 );
 
@@ -150,12 +150,12 @@ CREATE TABLE IF NOT EXISTS client_relation
 
 CREATE TABLE IF NOT EXISTS borrow
 (
-    client_id         INT  NOT NULL,
-    item_id           INT  NOT NULL,
-    borrow_start_date DATE NOT NULL DEFAULT CURRENT_DATE,
-    borrow_due_date   DATE NOT NULL, -- set update based on how many days the item can be borrowed; update if user extends
-    borrow_return_date       DATE,
-    borrow_extends           INT           DEFAULT 0 CHECK ( borrow_extends >= 0 AND borrow_extends <= 3),
+    client_id          INT  NOT NULL,
+    item_id            INT  NOT NULL,
+    borrow_start_date  DATE NOT NULL DEFAULT CURRENT_DATE,
+    borrow_due_date    DATE NOT NULL, -- set update based on how many days the item can be borrowed; update if user extends
+    borrow_return_date DATE,
+    borrow_extends     INT           DEFAULT 0 CHECK ( borrow_extends >= 0 AND borrow_extends <= 3),
     PRIMARY KEY (client_id, item_id, borrow_start_date)
 );
 
@@ -169,19 +169,27 @@ CREATE TABLE IF NOT EXISTS reservation
     PRIMARY KEY (client_id, item_id, reservation_start_date)
 );
 
-CREATE VIEW full_product_info AS
+CREATE VIEW main_page_info AS
 SELECT product.product_id,
-       product_title,
-       product_note,
-       product_year,
-       product_photo_link,
-       media_format_name
+       CASE
+           WHEN EXISTS (select * FROM full_item_info WHERE item_status_name = 'available')
+               THEN TRUE
+           ELSE FALSE END AS avaliable,
+       media_format_name,
+       product.product_title,
+       product.product_year,
+       product.product_photo_link,
+       array_agg(case
+                     when fii.item_status_name = 'available' -- available
+                         then fii.library_name
+           end)           as available_in_libraries
 FROM product
-         JOIN media_format ON media_format.media_format_id = product.media_format_id
-         JOIN creator_relation ON product.product_id = creator_relation.product_id
-         JOIN creator ON creator_relation.creator_id = creator.creator_id
-         JOIN creator_role on creator_role.role_id = creator_relation.role_id
-         JOIN product_item ON product.product_id = product_item.product_id;
+         LEFT JOIN media_format ON media_format.media_format_id = product.media_format_id
+         LEFT JOIN full_item_info AS fii ON fii.product_id = product.product_id
+group by product.product_id, product.product_title,
+         product.product_year,
+         product.product_photo_link,
+         media_format_name;
 
 CREATE VIEW full_item_info AS
 SELECT product_item.item_id,
