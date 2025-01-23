@@ -169,28 +169,6 @@ CREATE TABLE IF NOT EXISTS reservation
     PRIMARY KEY (client_id, item_id, reservation_start_date)
 );
 
-CREATE VIEW main_page_info AS
-SELECT product.product_id,
-       CASE
-           WHEN EXISTS (select * FROM full_item_info WHERE item_status_name = 'available')
-               THEN TRUE
-           ELSE FALSE END AS avaliable,
-       media_format_name,
-       product.product_title,
-       product.product_year,
-       product.product_photo_link,
-       array_agg(case
-                     when fii.item_status_name = 'available' -- available
-                         then fii.library_name
-           end)           as available_in_libraries
-FROM product
-         LEFT JOIN media_format ON media_format.media_format_id = product.media_format_id
-         LEFT JOIN full_item_info AS fii ON fii.product_id = product.product_id
-group by product.product_id, product.product_title,
-         product.product_year,
-         product.product_photo_link,
-         media_format_name;
-
 CREATE VIEW full_item_info AS
 SELECT product_item.item_id,
        product.product_id,
@@ -209,6 +187,34 @@ FROM product_item
          JOIN item_location ON product_item.item_id = item_location.item_id
          JOIN library ON item_location.library_id = library.library_id
          JOIN library_address ON library.library_id = library_address.library_id;
+
+DROP VIEW IF EXISTS main_page_info;
+
+CREATE VIEW main_page_info AS
+SELECT product.product_id,
+       CASE
+           WHEN EXISTS (select * FROM full_item_info WHERE item_status_name = 'available')
+               THEN TRUE
+           ELSE FALSE END AS avaliable,
+       media_format_name,
+       product.product_title,
+       product.product_year,
+       product.product_link_to_emedia,
+       product.product_photo_link,
+       product.product_note,
+       array_agg(case
+                     when fii.item_status_name = 'available' -- available
+                         then fii.library_name
+           end)           as available_in_libraries
+FROM product
+         LEFT JOIN media_format ON media_format.media_format_id = product.media_format_id
+         LEFT JOIN full_item_info AS fii ON fii.product_id = product.product_id
+group by product.product_id, product.product_title,
+         product.product_year,
+         product.product_photo_link,
+         media_format_name;
+
+
 
 ALTER TABLE product
     ADD FOREIGN KEY (media_format_id) REFERENCES media_format (media_format_id);
@@ -272,3 +278,27 @@ ALTER TABLE borrow
 
 ALTER TABLE borrow
     ADD FOREIGN KEY (client_id) REFERENCES client_relation (client_id);
+
+--  EXTENSIONS:
+
+-- pg_trgm - support for similarity of text using trigram matching
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+
+
+-- INDEXES
+-- GIN Index for full-search and similarity on product title, notes
+CREATE INDEX idx_gin_product_search
+    ON product
+        USING GIN (
+                   product_title gin_trgm_ops,
+                   product_note gin_trgm_ops
+            );
+
+-- GIN Index for full-search on creator names
+CREATE INDEX idx_gin_creator_search
+    ON creator
+        USING GIN (
+                   creator_forename gin_trgm_ops,
+                   creator_lastname gin_trgm_ops
+            );
+
