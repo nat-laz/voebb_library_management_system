@@ -169,6 +169,41 @@ CREATE TABLE IF NOT EXISTS reservation
     PRIMARY KEY (client_id, item_id, reservation_start_date)
 );
 
+CREATE VIEW full_product_info AS
+SELECT product.product_id,
+       product_title,
+       product_note,
+       product_year,
+       product_photo_link,
+       media_format_name
+FROM product
+         JOIN media_format ON media_format.media_format_id = product.media_format_id
+         JOIN creator_relation ON product.product_id = creator_relation.product_id
+         JOIN creator ON creator_relation.creator_id = creator.creator_id
+         JOIN creator_role on creator_role.role_id = creator_relation.role_id
+         JOIN product_item ON product.product_id = product_item.product_id
+group by media_format_name, product_photo_link, product_year, creator_lastname, creator_forename, product_note,
+         product_title, product.product_id;
+
+CREATE VIEW full_item_info AS
+SELECT product_item.item_id,
+       product.product_id,
+       product_title,
+       item_status_name,
+       library.library_id,
+       library_name,
+       location_in_library,
+       library_address.city,
+       library_address.street,
+       library_address.house_number
+
+FROM product_item
+         JOIN product ON product.product_id = product_item.product_id
+         JOIN item_status ON product_item.item_status_id = item_status.item_status_id
+         JOIN item_location ON product_item.item_id = item_location.item_id
+         JOIN library ON item_location.library_id = library.library_id
+         JOIN library_address ON library.library_id = library_address.library_id;
+
 ALTER TABLE product
     ADD FOREIGN KEY (media_format_id) REFERENCES media_format (media_format_id);
 
