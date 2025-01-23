@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS product
 (
     product_id              SERIAL PRIMARY KEY,
     product_title           TEXT NOT NULL,
-    product_year            smallint check (product_year between 0 and extract(year from current_date)),
+    product_year            SMALLINT CHECK (product_year BETWEEN 0 AND extract(YEAR FROM current_date)),
     media_format_id         INT  NOT NULL,
     product_link_to_emedia  TEXT,
     product_age_restriction INT,
@@ -58,7 +58,7 @@ CREATE TABLE IF NOT EXISTS language_relation
 (
     product_id       INT NOT NULL,
     language_id      INT NOT NULL,
-    language_type_id int NOT NULL,
+    language_type_id INT NOT NULL,
     PRIMARY KEY (product_id, language_id, language_type_id)
 );
 
@@ -120,10 +120,10 @@ CREATE TABLE IF NOT EXISTS item_location
 CREATE TABLE IF NOT EXISTS library_address
 (
     library_id   INT  NOT NULL,
-    city         text NOT NULL,
-    street       text NOT NULL,
+    city         TEXT NOT NULL,
+    street       TEXT NOT NULL,
     house_number INT  NOT NULL,
-    osm_link     text NOT NULL
+    osm_link     TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS client
@@ -181,9 +181,7 @@ FROM product
          JOIN creator_relation ON product.product_id = creator_relation.product_id
          JOIN creator ON creator_relation.creator_id = creator.creator_id
          JOIN creator_role on creator_role.role_id = creator_relation.role_id
-         JOIN product_item ON product.product_id = product_item.product_id
-group by media_format_name, product_photo_link, product_year, creator_lastname, creator_forename, product_note,
-         product_title, product.product_id;
+         JOIN product_item ON product.product_id = product_item.product_id;
 
 CREATE VIEW full_item_info AS
 SELECT product_item.item_id,
