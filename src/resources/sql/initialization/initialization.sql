@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS product
 (
     product_id              SERIAL PRIMARY KEY,
     product_title           TEXT NOT NULL,
-    product_year            smallint check (product_year between 0 and extract(year from current_date)),
+    product_year            SMALLINT CHECK (product_year BETWEEN 0 AND extract(YEAR FROM current_date)),
     media_format_id         INT  NOT NULL,
     product_link_to_emedia  TEXT,
     product_age_restriction INT,
@@ -16,22 +16,22 @@ CREATE TABLE IF NOT EXISTS product
 CREATE TABLE IF NOT EXISTS media_format
 (
     media_format_id      SERIAL PRIMARY KEY,
-    media_format_name    TEXT                 NOT NULL,
-    borrow_duration_days INT NOT NULL CHECK (borrow_duration_days IN (14, 28))
+    media_format_name    TEXT NOT NULL,
+    borrow_duration_days INT  NOT NULL CHECK (borrow_duration_days IN (14, 28))
 );
 
 CREATE TABLE IF NOT EXISTS book
 (
-    product_id INT NOT NULL,
-    book_isbn    TEXT,
-    book_pages   INT,
-    book_edition TEXT,
+    product_id     INT NOT NULL,
+    book_isbn      TEXT,
+    book_pages     INT,
+    book_edition   TEXT,
     book_publisher TEXT
 );
 
 CREATE TABLE IF NOT EXISTS video
 (
-    product_id INT NOT NULL UNIQUE,
+    product_id                INT NOT NULL UNIQUE,
     video_duration_in_minutes INT
 );
 
@@ -58,7 +58,7 @@ CREATE TABLE IF NOT EXISTS language_relation
 (
     product_id       INT NOT NULL,
     language_id      INT NOT NULL,
-    language_type_id int NOT NULL,
+    language_type_id INT NOT NULL,
     PRIMARY KEY (product_id, language_id, language_type_id)
 );
 
@@ -120,10 +120,10 @@ CREATE TABLE IF NOT EXISTS item_location
 CREATE TABLE IF NOT EXISTS library_address
 (
     library_id   INT  NOT NULL,
-    city         text NOT NULL,
-    street       text NOT NULL,
+    city         TEXT NOT NULL,
+    street       TEXT NOT NULL,
     house_number INT  NOT NULL,
-    osm_link     text NOT NULL
+    osm_link     TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS client
@@ -150,12 +150,12 @@ CREATE TABLE IF NOT EXISTS client_relation
 
 CREATE TABLE IF NOT EXISTS borrow
 (
-    client_id         INT  NOT NULL,
-    item_id           INT  NOT NULL,
-    borrow_start_date DATE NOT NULL DEFAULT CURRENT_DATE,
-    borrow_due_date   DATE NOT NULL, -- set update based on how many days the item can be borrowed; update if user extends
-    borrow_return_date       DATE,
-    borrow_extends           INT           DEFAULT 0 CHECK ( borrow_extends >= 0 AND borrow_extends <= 3),
+    client_id          INT  NOT NULL,
+    item_id            INT  NOT NULL,
+    borrow_start_date  DATE NOT NULL DEFAULT CURRENT_DATE,
+    borrow_due_date    DATE NOT NULL, -- set update based on how many days the item can be borrowed; update if user extends
+    borrow_return_date DATE,
+    borrow_extends     INT           DEFAULT 0 CHECK ( borrow_extends >= 0 AND borrow_extends <= 3),
     PRIMARY KEY (client_id, item_id, borrow_start_date)
 );
 
@@ -168,6 +168,47 @@ CREATE TABLE IF NOT EXISTS reservation
     reservation_due_date   DATE NOT NULL DEFAULT CURRENT_DATE + INTERVAL '3 days',
     PRIMARY KEY (client_id, item_id, reservation_start_date)
 );
+
+CREATE VIEW main_page_info AS
+SELECT product.product_id,
+       CASE
+           WHEN EXISTS (select * FROM full_item_info WHERE item_status_name = 'available')
+               THEN TRUE
+           ELSE FALSE END AS avaliable,
+       media_format_name,
+       product.product_title,
+       product.product_year,
+       product.product_photo_link,
+       array_agg(case
+                     when fii.item_status_name = 'available' -- available
+                         then fii.library_name
+           end)           as available_in_libraries
+FROM product
+         LEFT JOIN media_format ON media_format.media_format_id = product.media_format_id
+         LEFT JOIN full_item_info AS fii ON fii.product_id = product.product_id
+group by product.product_id, product.product_title,
+         product.product_year,
+         product.product_photo_link,
+         media_format_name;
+
+CREATE VIEW full_item_info AS
+SELECT product_item.item_id,
+       product.product_id,
+       product_title,
+       item_status_name,
+       library.library_id,
+       library_name,
+       location_in_library,
+       library_address.city,
+       library_address.street,
+       library_address.house_number
+
+FROM product_item
+         JOIN product ON product.product_id = product_item.product_id
+         JOIN item_status ON product_item.item_status_id = item_status.item_status_id
+         JOIN item_location ON product_item.item_id = item_location.item_id
+         JOIN library ON item_location.library_id = library.library_id
+         JOIN library_address ON library.library_id = library_address.library_id;
 
 ALTER TABLE product
     ADD FOREIGN KEY (media_format_id) REFERENCES media_format (media_format_id);
