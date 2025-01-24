@@ -9,8 +9,11 @@
     <file url="file://$PROJECT_DIR$/src/resources/sql/initialization/initial_service_data.sql" dialect="PostgreSQL" />
     <file url="file://$PROJECT_DIR$/src/resources/sql/initialization/initialization.sql" dialect="PostgreSQL" />
     <file url="file://$PROJECT_DIR$/src/resources/sql/library-statistic/statistic_by_library.sql" dialect="PostgreSQL" />
+    <file url="file://$PROJECT_DIR$/src/resources/sql/search_input/by_creator.sql" dialect="PostgreSQL" />
+    <file url="file://$PROJECT_DIR$/src/resources/sql/search_input/by_media_format.sql" dialect="PostgreSQL" />
     <file url="file://$PROJECT_DIR$/src/resources/sql/search_input/by_title.sql" dialect="PostgreSQL" />
     <file url="file://$PROJECT_DIR$/src/resources/sql/search_input/by_year_range.sql" dialect="PostgreSQL" />
+    <file url="file://$PROJECT_DIR$/src/resources/sql/search_input/full_description_by_product_id.sql" dialect="PostgreSQL" />
     <file url="PROJECT" dialect="PostgreSQL" />
   </component>
 </project>

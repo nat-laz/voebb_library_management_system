@@ -1,3 +1,4 @@
+-- generate 100_000 clients
 INSERT INTO client (client_forename,
                     client_lastname,
                     client_date_of_birth,
@@ -16,6 +17,7 @@ insert into client_relation (client_id)
 select i
 from generate_series(1, 100000) s(i);
 
+-- Generate 100_000 products
 INSERT INTO product(product_title,
                     product_year,
                     product_note,
@@ -26,6 +28,7 @@ select 'Product Title #' || i,
        floor(random() * 4 + 1)::INT
 from generate_series(1, 100000) s(i);
 
+-- Fill details for books and video
 DO
 $$
     DECLARE
@@ -155,10 +158,41 @@ $$
     END
 $$;
 
+-- Generate creators
+INSERT INTO creator(creator_forename, creator_lastname)
+SELECT 'Forename' || i, 'Lastname' || i
+FROM generate_series(1, 100000) s(i);
 
--- delete this
-SELECT product.product_title,
-       array_agg(fii.library_name) filter ( where fii.item_status_name = 'available' ) as available_in_libraries
-FROM product
-         LEFT JOIN full_item_info AS fii ON fii.product_id = product.product_id
-group by product.product_id;
+-- Generate creator_product_relation
+DO
+$$
+    BEGIN
+        FOR product_id_counter IN 1..100000
+            LOOP
+                FOR role_id_counter in 1..floor(random() * 3) + 1
+                    LOOP
+                        insert into creator_relation(creator_id, product_id, role_id)
+                        VALUES (floor(random() * 100000) + 1,
+                                product_id_counter,
+                                floor(random() * 6) + 1);
+                    END LOOP;
+            END LOOP;
+    END
+$$;
+
+-- Generate language_product relation
+DO
+$$
+    BEGIN
+        FOR product_id_counter IN 1..100000
+            LOOP
+                FOR role_id_counter in 1..floor(random() * 3) + 1
+                    LOOP
+                        insert into language_relation(product_id, language_id, language_type_id)
+                        VALUES (product_id_counter,
+                                floor(random() * 52) + 1,
+                                role_id_counter);
+                    END LOOP;
+            END LOOP;
+    END
+$$;
