@@ -269,15 +269,27 @@ values ('original'),
        ('dubbing');
 
 INSERT INTO library (library_name)
-values ('name of library 1'),
-       ('name of library 2'),
-       ('name of library 3'),
-       ('name of library 4'),
-       ('name of library 5');
+values ('Adolf-Reichwein-Bibliothek'),
+       ('ZLB / Amerika Gedenkbibliothek'),
+       ('Anna-Seghers-Bibliothek'),
+       ('Anton-Saefkow-Bibliothek'),
+       ('ZLB / Berliner Stadtbibliothek'),
+       ('Stadtbibliothek Spandau'),
+       ('Gertrud-Junge-Bibliothek'),
+       ('Gertrud-Junge-Bibliothek'),
+       ('Humboldt-Bibliothek'),
+       ('Margarete-Kubicka-Bibliothek'),
+       ('Stadtteilbibliothek Haselhorst'),
+       ('Thomas-Dehler-Bibliothek');
 
 INSERT INTO library_address(library_id, city, street, house_number, osm_link)
-VALUES (1, 'Berlin', 'Street One', 1, 'dummy'),
-       (2, 'Berlin', 'Street Two', 2, 'dummy'),
-       (3, 'Berlin', 'Street Tree', 3, 'dummy'),
-       (4, 'Berlin', 'Street Four', 4, 'dummy'),
-       (5, 'Berlin', 'Street Five', 5, 'dummy');
+VALUES (1, 'Berlin', 'Berkaer Str.', 7, 'Die Adolf-Reichwein-Bibliothek bleibt an gesetzlichen Feiertagen geschlossen'),
+       (2, 'Berlin', 'Blücherplatz', 1, 'dummy'),
+       (3, 'Berlin', 'Prerower Platz', 2, 'dummy'),
+       (4, 'Berlin', 'Anton-Saefkow-Platz', 14, 'dummy'),
+       (5, 'Berlin', 'Breite Str.', 30, 'dummy'), -- actual house_number is 30-36
+       (6, 'Berlin', 'Carl-Schurz-Str.', 13, 'dummy'),
+       (7, 'Berlin', 'Karolinenstraße', 19, 'dummy'),
+       (8, 'Berlin', 'Gutschmidtstr.', 33, 'dummy'),
+       (9, 'Berlin', 'Gartenfelder Str.', 104, 'dummy'),
+       (10, 'Berlin', 'Martin-Luther-Str.', 77, 'dummy');
