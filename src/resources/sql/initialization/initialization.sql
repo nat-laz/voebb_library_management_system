@@ -10,8 +10,10 @@ CREATE TABLE IF NOT EXISTS product
     product_link_to_emedia  TEXT,
     product_age_restriction INT,
     product_photo_link      TEXT NOT NULL DEFAULT ('default'),
-    product_note            TEXT
+    product_note            TEXT,
+    is_physical             BOOLEAN
 );
+
 
 CREATE TABLE IF NOT EXISTS media_format
 (
@@ -152,6 +154,7 @@ CREATE TABLE IF NOT EXISTS borrow
 (
     client_id          INT  NOT NULL,
     item_id            INT  NOT NULL,
+    library_id         INT,
     borrow_start_date  DATE NOT NULL DEFAULT CURRENT_DATE,
     borrow_due_date    DATE NOT NULL, -- set update based on how many days the item can be borrowed; update if user extends
     borrow_return_date DATE,
@@ -160,10 +163,12 @@ CREATE TABLE IF NOT EXISTS borrow
 );
 
 
+
 CREATE TABLE IF NOT EXISTS reservation
 (
     client_id              INT  NOT NULL,
     item_id                INT  NOT NULL,
+    library_id             INT,
     reservation_start_date DATE NOT NULL DEFAULT CURRENT_DATE,
     reservation_due_date   DATE NOT NULL DEFAULT CURRENT_DATE + INTERVAL '3 days',
     PRIMARY KEY (client_id, item_id, reservation_start_date)
@@ -188,24 +193,30 @@ FROM product_item
          JOIN library ON item_location.library_id = library.library_id
          JOIN library_address ON library.library_id = library_address.library_id;
 
-DROP VIEW IF EXISTS main_page_info;
 
-CREATE VIEW main_page_info AS
+CREATE OR REPLACE VIEW main_page_info AS
 SELECT product.product_id,
+       -- check if product is_physical; digital products always available
        CASE
-           WHEN EXISTS (select * FROM full_item_info WHERE item_status_name = 'available')
-               THEN TRUE
-           ELSE FALSE END AS avaliable,
+           WHEN product.is_physical THEN
+               CASE
+                   WHEN EXISTS (SELECT 1 -- updated this query to get re-freshed data after borrowing/reservation
+                                FROM full_item_info
+                                WHERE full_item_info.product_id = product.product_id
+                                  AND full_item_info.item_status_name = 'available')
+                       THEN TRUE
+                   ELSE FALSE END
+           ELSE
+               TRUE -- set digital always available
+           END  AS avaliable,
        media_format_name,
        product.product_title,
        product.product_year,
-       product.product_link_to_emedia,
        product.product_photo_link,
-       product.product_note,
        array_agg(case
                      when fii.item_status_name = 'available' -- available
                          then fii.library_name
-           end)           as available_in_libraries
+           end) as available_in_libraries
 FROM product
          LEFT JOIN media_format ON media_format.media_format_id = product.media_format_id
          LEFT JOIN full_item_info AS fii ON fii.product_id = product.product_id
@@ -273,11 +284,18 @@ ALTER TABLE reservation
 ALTER TABLE reservation
     ADD FOREIGN KEY (item_id) REFERENCES product_item (item_id);
 
+ALTER TABLE reservation
+    ADD FOREIGN KEY (library_id) REFERENCES library (library_id);
+
 ALTER TABLE borrow
     ADD FOREIGN KEY (item_id) REFERENCES product_item (item_id);
 
 ALTER TABLE borrow
     ADD FOREIGN KEY (client_id) REFERENCES client_relation (client_id);
+
+ALTER TABLE borrow
+    ADD FOREIGN KEY (library_id) REFERENCES library (library_id);
+
 
 --  EXTENSIONS:
 
@@ -302,3 +320,79 @@ CREATE INDEX idx_gin_creator_search
                    creator_lastname gin_trgm_ops
             );
 
+------------------ UTILS ------------------
+
+-- VALIDATION IN BORROW AND RESERVE TRANSACTIONS
+CREATE OR REPLACE FUNCTION validate_item_and_client_ids(v_item_id INT, v_client_id INT)
+    RETURNS VOID AS
+$$
+BEGIN
+    IF v_item_id IS NULL THEN
+        RAISE EXCEPTION 'Item ID cannot be null';
+    END IF;
+
+    IF v_client_id IS NULL THEN
+        RAISE EXCEPTION 'Client ID cannot be null';
+    END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+-- check if item is not reserved and not borrowed
+CREATE OR REPLACE FUNCTION validate_item_status(v_item_id INT)
+    RETURNS VOID AS
+$$
+DECLARE
+    v_item_status_id INT;
+BEGIN
+
+    v_item_status_id := (SELECT product_item.item_status_id
+                         FROM product_item
+                         WHERE item_id = v_item_id);
+
+    IF v_item_status_id = 2 THEN
+        RAISE EXCEPTION 'Item with id % is already borrowed', v_item_id;
+    ELSIF v_item_status_id = 3 THEN
+        RAISE EXCEPTION 'Item with id % is reserved', v_item_id;
+    END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+-- check if product is physical and exists in specific library
+CREATE OR REPLACE FUNCTION validate_item_location(v_item_id INT, v_library_id INT, v_context TEXT)
+    RETURNS VOID AS
+$$
+DECLARE
+    v_is_physical   BOOLEAN;
+    v_valid_library BOOLEAN;
+BEGIN
+    -- check if the item is physical or digital
+    v_is_physical := (SELECT is_physical
+                      FROM product
+                      WHERE product_id = (SELECT product_id
+                                          FROM product_item
+                                          WHERE item_id = v_item_id));
+
+    -- exception for attempt to reserve digital product
+    IF v_context = 'reservation' AND NOT v_is_physical THEN
+        RAISE EXCEPTION 'This item % can be borrowed immediately.', v_item_id;
+    END IF;
+
+    -- skip validation for digital products during borrowing transaction
+    IF NOT v_is_physical THEN
+        RETURN;
+    END IF;
+
+
+    -- validate relationship between library_id <=> item_id
+    v_valid_library := EXISTS (SELECT 1
+                               FROM item_location
+                               WHERE item_id = v_item_id
+                                 AND library_id = v_library_id);
+
+    -- exception if the library_id is invalid
+    IF NOT v_valid_library THEN
+        RAISE EXCEPTION 'Library with id % does not contain item with id %', v_library_id, v_item_id;
+    END IF;
+
+END;
+$$ LANGUAGE plpgsql;

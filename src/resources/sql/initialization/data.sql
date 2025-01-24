@@ -221,26 +221,26 @@ VALUES ('book', '28'),
        ('dvd_film', '14'),
        ('board_game', '28');
 
-INSERT INTO product (product_title, product_year, media_format_id, product_link_to_emedia, product_note)
-VALUES ('Harry Potter and the Philosopher Stone', 1997, 1, NULL, NULL), -- J.K. Rowling
-       ('1984', 1949, 1, NULL, NULL),                                   -- George Orwell
-       ('Pride and Prejudice', 1813, 1, NULL, NULL),                    -- Jane Austen
-       ('The Adventures of Tom Sawyer', 1876, 1, NULL, NULL),           -- Mark Twain
-       ('To Kill a Mockingbird', 1960, 1, NULL, NULL),                  -- Harper Lee
-       ('The Hobbit', 1937, 1, NULL, NULL),                             -- J.R.R. Tolkien
-       ('The Great Gatsby', 1925, 1, NULL, NULL),                       -- F. Scott Fitzgerald
-       ('A Tale of Two Cities', 1859, 1, NULL, NULL),                   -- Charles Dickens
-       ('The Old Man and the Sea', 1952, 1, NULL, NULL),                -- Ernest Hemingway
-       ('Mrs Dalloway', 1925, 1, NULL, NULL),                           -- Virginia Woolf
-       ('1984', 1949, 2, 'direct link to e-media', NULL),               -- George Orwell (e-book)
-       ('Effective Java', 2018, 1, NULL, 'Book edition by Joshua Bloch'),
+INSERT INTO product (product_title, product_year, media_format_id, product_link_to_emedia, product_note, is_physical)
+VALUES ('Harry Potter and the Philosopher Stone', 1997, 1, NULL, NULL, TRUE), -- J.K. Rowling
+       ('1984', 1949, 1, NULL, NULL, TRUE),                                   -- George Orwell
+       ('Pride and Prejudice', 1813, 1, NULL, NULL, TRUE),                    -- Jane Austen
+       ('The Adventures of Tom Sawyer', 1876, 1, NULL, NULL, TRUE),           -- Mark Twain
+       ('To Kill a Mockingbird', 1960, 1, NULL, NULL, TRUE),                  -- Harper Lee
+       ('The Hobbit', 1937, 1, NULL, NULL, TRUE),                             -- J.R.R. Tolkien
+       ('The Great Gatsby', 1925, 1, NULL, NULL, TRUE),                       -- F. Scott Fitzgerald
+       ('A Tale of Two Cities', 1859, 1, NULL, NULL, TRUE),                   -- Charles Dickens
+       ('The Old Man and the Sea', 1952, 1, NULL, NULL, TRUE),                -- Ernest Hemingway
+       ('Mrs Dalloway', 1925, 1, NULL, NULL, TRUE),                           -- Virginia Woolf
+       ('1984', 1949, 2, 'direct link to e-media', NULL, FALSE),              -- George Orwell (e-book)
+       ('Effective Java', 2018, 1, NULL, 'Book edition by Joshua Bloch', TRUE),
        ('Java: The Complete Reference', 2021, 2, 'https://example.com/java-complete-reference',
-        'E-book edition by Herbert Schildt'),
+        'E-book edition by Herbert Schildt', FALSE),
        ('Head First Java', 2022, 3, 'https://example.com/java-tutorial',
-        'Video tutorial based on the book by Kathy Sierra and Bert Bates'),
-       ('Java Concurrency in Practice', 2006, 1, NULL, 'Book edition by Brian Goetz'),
+        'Video tutorial based on the book by Kathy Sierra and Bert Bates', FALSE),
+       ('Java Concurrency in Practice', 2006, 1, NULL, 'Book edition by Brian Goetz', TRUE),
        ('Core Java Volume I: Fundamentals', 2020, 2, 'https://example.com/core-java-fundamentals',
-        'E-book edition by Cay S. Horstmann and Gary Cornell');
+        'E-book edition by Cay S. Horstmann and Gary Cornell', FALSE);
 
 INSERT INTO book (product_id, book_pages)
 VALUES (1, 223),  -- J.K. Rowling
