@@ -1,10 +1,11 @@
 -- CHECK RESERVATION TABLE
-SELECT * FROM reservation;
+SELECT *
+FROM reservation;
 
 -- CHECK RESERVATION TABLE MORE DETAILS
 SELECT reservation.client_id,
        product_item.item_id,
-       concat(client.client_forename || ' ' || client.client_lastname, ', ') AS creator_full_name,
+       CONCAT(client.client_forename || ' ' || client.client_lastname, ', ') AS creator_full_name,
        reservation_start_date,
        reservation_due_date,
        item_status_name,

@@ -9,7 +9,7 @@ BEGIN
         SELECT item_id, reservation_due_date
         FROM reservation
         LOOP
-            IF (current_date > record_reservation.reservation_due_date) THEN
+            IF (CURRENT_DATE > record_reservation.reservation_due_date) THEN
                 -- re-activate  status to "available"
                 UPDATE product_item
                 SET item_status_id = 1

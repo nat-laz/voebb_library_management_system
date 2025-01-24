@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS product
 (
     product_id              SERIAL PRIMARY KEY,
     product_title           TEXT NOT NULL,
-    product_year            SMALLINT CHECK (product_year BETWEEN 0 AND extract(YEAR FROM current_date)),
+    product_year            SMALLINT CHECK (product_year BETWEEN 0 AND EXTRACT(YEAR FROM CURRENT_DATE)),
     media_format_id         INT  NOT NULL,
     product_link_to_emedia  TEXT,
     product_age_restriction INT,
@@ -135,7 +135,7 @@ CREATE TABLE IF NOT EXISTS client
     client_registration_date        DATE        NOT NULL, -- 1 year
     client_membership_expiring_date DATE,
     client_email                    TEXT UNIQUE NOT NULL CHECK (client_email ~* '^[A-Za-z0-9._+%-]+@[A-Za-z0-9.-]+[.][A-Za-z]+$'),
-    client_password                 TEXT        NOT NULL CHECK (length(client_password) > 8)
+    client_password                 TEXT        NOT NULL CHECK (LENGTH(client_password) > 8)
 );
 
 CREATE TYPE client_status AS ENUM ('active', 'inactive', 'warning', 'banned');
@@ -191,18 +191,18 @@ FROM product_item
 CREATE VIEW main_page_info AS
 SELECT product.product_id,
        CASE
-           WHEN EXISTS (select * FROM full_item_info WHERE item_status_name = 'available')
+           WHEN EXISTS (SELECT * FROM full_item_info WHERE item_status_name = 'available')
                THEN TRUE
            ELSE FALSE END                                                              AS avaliable,
        media_format_name,
        product.product_title,
        product.product_year,
        product.product_photo_link,
-       array_agg(fii.library_name) filter ( where fii.item_status_name = 'available' ) as available_in_libraries
+       ARRAY_AGG(fii.library_name) FILTER ( WHERE fii.item_status_name = 'available' ) AS available_in_libraries
 FROM product
          LEFT JOIN media_format ON media_format.media_format_id = product.media_format_id
          LEFT JOIN full_item_info AS fii ON fii.product_id = product.product_id
-group by product.product_id, product.product_title,
+GROUP BY product.product_id, product.product_title,
          product.product_year,
          product.product_photo_link,
          media_format_name;

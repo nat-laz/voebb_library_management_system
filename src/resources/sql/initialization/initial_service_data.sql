@@ -263,7 +263,7 @@ VALUES ('English'),
        ('Chichewa');
 
 INSERT INTO language_type(language_type_name)
-values ('original'),
+VALUES ('original'),
        ('translation'),
        ('subtitles'),
        ('dubbing');
@@ -274,7 +274,7 @@ VALUES ('available'),
        ('reserved');
 
 INSERT INTO library (library_name)
-values ('Adolf Reichwein Bibliothek'),
+VALUES ('Adolf Reichwein Bibliothek'),
        ('ZLB / Amerika Gedenkbibliothek'),
        ('Anna Seghers Bibliothek'),
        ('Anton Saefkow Bibliothek'),

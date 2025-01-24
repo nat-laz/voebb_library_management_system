@@ -7,26 +7,26 @@ INSERT INTO client (client_forename,
                     client_password)
 SELECT 'Forename_' || i,
        'Lastname_' || i,
-       (CURRENT_DATE - (floor(random() * 18250) + 6570) * INTERVAL '1 day')::date,
-       (CURRENT_DATE - (floor(random() * 365 * 10) + 365 * 10) * INTERVAL '1 day')::date,
+       (CURRENT_DATE - (FLOOR(RANDOM() * 18250) + 6570) * INTERVAL '1 day')::DATE,
+       (CURRENT_DATE - (FLOOR(RANDOM() * 365 * 10) + 365 * 10) * INTERVAL '1 day')::DATE,
        'client_' || i || '@example.com',
-       'Password_' || pg_catalog.floor(random() * 100)::int
-from generate_series(1, 100000) s(i);
+       'Password_' || pg_catalog.floor(RANDOM() * 100)::INT
+FROM GENERATE_SERIES(1, 100000) s(i);
 
-insert into client_relation (client_id)
-select i
-from generate_series(1, 100000) s(i);
+INSERT INTO client_relation (client_id)
+SELECT i
+FROM GENERATE_SERIES(1, 100000) s(i);
 
 -- Generate 100_000 products
 INSERT INTO product(product_title,
                     product_year,
                     product_note,
                     media_format_id)
-select 'Product Title #' || i,
-       floor(random() * (2025 - 1950) + 1) + 1950,
+SELECT 'Product Title #' || i,
+       FLOOR(RANDOM() * (2025 - 1950) + 1) + 1950,
        'Note for product #' || i,
-       floor(random() * 4 + 1)::INT
-from generate_series(1, 100000) s(i);
+       FLOOR(RANDOM() * 4 + 1)::INT
+FROM GENERATE_SERIES(1, 100000) s(i);
 
 -- Fill details for books and video
 DO
@@ -45,30 +45,30 @@ $$
                                      book_publisher)
                     VALUES (r_product.product_id,
                             'ISBN FOR BOOK ' || r_product.product_id,
-                            floor(random() * (1000 - 50) + 50)::INT,
-                            'Publisher #' || floor(random() * (500) + 1)::INT);
+                            FLOOR(RANDOM() * (1000 - 50) + 50)::INT,
+                            'Publisher #' || FLOOR(RANDOM() * (500) + 1)::INT);
                 ELSIF r_product.media_format_id = 2 THEN
                     UPDATE product
                     SET product_link_to_emedia = 'link/to/digital_media'
-                    where product_id = r_product.product_id;
+                    WHERE product_id = r_product.product_id;
                     INSERT INTO book(product_id,
                                      book_isbn,
                                      book_pages,
                                      book_publisher)
                     VALUES (r_product.product_id,
                             'ISBN FOR BOOK ' || r_product.product_id,
-                            floor(random() * (1000 - 50) + 50)::INT,
-                            'Publisher #' || floor(random() * (500) + 1)::INT);
+                            FLOOR(RANDOM() * (1000 - 50) + 50)::INT,
+                            'Publisher #' || FLOOR(RANDOM() * (500) + 1)::INT);
                 ELSIF r_product.media_format_id = 3 THEN
                     INSERT INTO video(product_id,
                                       video_duration_in_minutes)
                     VALUES (r_product.product_id,
-                            floor(random() * (180 - 60) + 60)::INT);
+                            FLOOR(RANDOM() * (180 - 60) + 60)::INT);
                 ELSIF r_product.media_format_id = 4 THEN
                     INSERT INTO video(product_id,
                                       video_duration_in_minutes)
                     VALUES (r_product.product_id,
-                            floor(random() * (180 - 60) + 60)::INT);
+                            FLOOR(RANDOM() * (180 - 60) + 60)::INT);
                 END IF;
             END LOOP;
     END
@@ -93,7 +93,6 @@ $$
     END
 $$;
 
-
 -- Random library location for each item
 DO
 $$
@@ -102,7 +101,7 @@ $$
             LOOP
                 INSERT INTO item_location(item_id, library_id)
                 VALUES (i,
-                        floor(random() * 10 + 1)::INT);
+                        FLOOR(RANDOM() * 10 + 1)::INT);
             END LOOP;
     END
 $$;
@@ -113,21 +112,20 @@ $$
     BEGIN
         FOR i IN 1..100000
             LOOP
-                IF floor(random() * 10 + 1) > 3 THEN
-                    update client
-                    set client_membership_expiring_date = (current_date + INTERVAL '1 years')
-                    where client_id = i;
+                IF FLOOR(RANDOM() * 10 + 1) > 3 THEN
+                    UPDATE client
+                    SET client_membership_expiring_date = (CURRENT_DATE + INTERVAL '1 years')
+                    WHERE client_id = i;
 
-                    update client_relation
-                    set client_status = 'active'
-                    where client_id = i;
-                end if;
+                    UPDATE client_relation
+                    SET client_status = 'active'
+                    WHERE client_id = i;
+                END IF;
             END LOOP;
     END
 $$;
 
-
--- borrow 50% of books
+-- borrow 50% of items
 DO
 $$
     DECLARE
@@ -135,7 +133,7 @@ $$
     BEGIN
         FOR i IN 1..1000000 -- for each item
             LOOP
-                IF floor(random() * 10 + 1) > 5 THEN
+                IF FLOOR(RANDOM() * 10 + 1) > 5 THEN
                     -- check if item is not reserved and not borrowed
                     v_item_status_id := (SELECT product_item.item_status_id FROM product_item WHERE item_id = i);
 
@@ -147,13 +145,13 @@ $$
 
                     -- Borrow new item
                     INSERT INTO borrow(client_id, item_id)
-                    VALUES (floor(random() * (100000 - 1) + 1), i);
+                    VALUES (FLOOR(RANDOM() * (100000 - 1) + 1), i);
 
                     -- Change status for item
                     UPDATE product_item
                     SET item_status_id = 2
                     WHERE product_item.item_id = i;
-                end if;
+                END IF;
             END LOOP;
     END
 $$;
@@ -161,7 +159,7 @@ $$;
 -- Generate creators
 INSERT INTO creator(creator_forename, creator_lastname)
 SELECT 'Forename' || i, 'Lastname' || i
-FROM generate_series(1, 100000) s(i);
+FROM GENERATE_SERIES(1, 100000) s(i);
 
 -- Generate creator_product_relation
 DO
@@ -169,12 +167,12 @@ $$
     BEGIN
         FOR product_id_counter IN 1..100000
             LOOP
-                FOR role_id_counter in 1..floor(random() * 3) + 1
+                FOR role_id_counter IN 1..FLOOR(RANDOM() * 3) + 1
                     LOOP
-                        insert into creator_relation(creator_id, product_id, role_id)
-                        VALUES (floor(random() * 100000) + 1,
+                        INSERT INTO creator_relation(creator_id, product_id, role_id)
+                        VALUES (FLOOR(RANDOM() * 100000) + 1,
                                 product_id_counter,
-                                floor(random() * 6) + 1);
+                                FLOOR(RANDOM() * 6) + 1);
                     END LOOP;
             END LOOP;
     END
@@ -186,11 +184,11 @@ $$
     BEGIN
         FOR product_id_counter IN 1..100000
             LOOP
-                FOR role_id_counter in 1..floor(random() * 3) + 1
+                FOR role_id_counter IN 1..FLOOR(RANDOM() * 3) + 1
                     LOOP
-                        insert into language_relation(product_id, language_id, language_type_id)
+                        INSERT INTO language_relation(product_id, language_id, language_type_id)
                         VALUES (product_id_counter,
-                                floor(random() * 52) + 1,
+                                FLOOR(RANDOM() * 52) + 1,
                                 role_id_counter);
                     END LOOP;
             END LOOP;

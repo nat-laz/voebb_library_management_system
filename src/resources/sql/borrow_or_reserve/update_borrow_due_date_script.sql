@@ -3,12 +3,12 @@ CREATE OR REPLACE FUNCTION calculate_borrow_due_date()
     RETURNS TRIGGER AS
 $$
 BEGIN
-    NEW.borrow_due_date := CURRENT_DATE + (select media_format.borrow_duration_days
-                                           from product_item
-                                                    join product on product_item.product_id = product.product_id
-                                                    join media_format on product.media_format_id = media_format.media_format_id
-                                           where item_id = NEW.item_id)::INT;
-    RETURN NEW;
+    new.borrow_due_date := CURRENT_DATE + (SELECT media_format.borrow_duration_days
+                                           FROM product_item
+                                                    JOIN product ON product_item.product_id = product.product_id
+                                                    JOIN media_format ON product.media_format_id = media_format.media_format_id
+                                           WHERE item_id = new.item_id)::INT;
+    RETURN new;
 END;
 $$ LANGUAGE plpgsql;
 

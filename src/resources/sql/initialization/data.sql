@@ -95,7 +95,6 @@ VALUES (1, 1, 1),
        (16, 12, 2); -- German Translation (Core Java Volume I: Fundamentals, translated into German)
 
 
-
 INSERT INTO product_item (product_id, item_status_id)
 VALUES (1, 1),
        (1, 1),
