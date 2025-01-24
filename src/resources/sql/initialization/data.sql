@@ -94,10 +94,7 @@ VALUES (1, 1, 1),
        (15, 1, 1),  -- English Original (Java Concurrency in Practice)
        (16, 12, 2); -- German Translation (Core Java Volume I: Fundamentals, translated into German)
 
-INSERT INTO item_status (item_status_name)
-VALUES ('available'),
-       ('borrowed'),
-       ('reserved');
+
 
 INSERT INTO product_item (product_id, item_status_id)
 VALUES (1, 1),

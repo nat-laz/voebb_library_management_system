@@ -169,28 +169,6 @@ CREATE TABLE IF NOT EXISTS reservation
     PRIMARY KEY (client_id, item_id, reservation_start_date)
 );
 
-CREATE VIEW main_page_info AS
-SELECT product.product_id,
-       CASE
-           WHEN EXISTS (select * FROM full_item_info WHERE item_status_name = 'available')
-               THEN TRUE
-           ELSE FALSE END AS avaliable,
-       media_format_name,
-       product.product_title,
-       product.product_year,
-       product.product_photo_link,
-       array_agg(case
-                     when fii.item_status_name = 'available' -- available
-                         then fii.library_name
-           end)           as available_in_libraries
-FROM product
-         LEFT JOIN media_format ON media_format.media_format_id = product.media_format_id
-         LEFT JOIN full_item_info AS fii ON fii.product_id = product.product_id
-group by product.product_id, product.product_title,
-         product.product_year,
-         product.product_photo_link,
-         media_format_name;
-
 CREATE VIEW full_item_info AS
 SELECT product_item.item_id,
        product.product_id,
@@ -209,6 +187,25 @@ FROM product_item
          JOIN item_location ON product_item.item_id = item_location.item_id
          JOIN library ON item_location.library_id = library.library_id
          JOIN library_address ON library.library_id = library_address.library_id;
+
+CREATE VIEW main_page_info AS
+SELECT product.product_id,
+       CASE
+           WHEN EXISTS (select * FROM full_item_info WHERE item_status_name = 'available')
+               THEN TRUE
+           ELSE FALSE END                                                              AS avaliable,
+       media_format_name,
+       product.product_title,
+       product.product_year,
+       product.product_photo_link,
+       array_agg(fii.library_name) filter ( where fii.item_status_name = 'available' ) as available_in_libraries
+FROM product
+         LEFT JOIN media_format ON media_format.media_format_id = product.media_format_id
+         LEFT JOIN full_item_info AS fii ON fii.product_id = product.product_id
+group by product.product_id, product.product_title,
+         product.product_year,
+         product.product_photo_link,
+         media_format_name;
 
 ALTER TABLE product
     ADD FOREIGN KEY (media_format_id) REFERENCES media_format (media_format_id);

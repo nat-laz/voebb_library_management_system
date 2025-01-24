@@ -268,19 +268,22 @@ values ('original'),
        ('subtitles'),
        ('dubbing');
 
+INSERT INTO item_status (item_status_name)
+VALUES ('available'),
+       ('borrowed'),
+       ('reserved');
+
 INSERT INTO library (library_name)
-values ('Adolf-Reichwein-Bibliothek'),
+values ('Adolf Reichwein Bibliothek'),
        ('ZLB / Amerika Gedenkbibliothek'),
-       ('Anna-Seghers-Bibliothek'),
-       ('Anton-Saefkow-Bibliothek'),
+       ('Anna Seghers Bibliothek'),
+       ('Anton Saefkow Bibliothek'),
        ('ZLB / Berliner Stadtbibliothek'),
        ('Stadtbibliothek Spandau'),
-       ('Gertrud-Junge-Bibliothek'),
-       ('Gertrud-Junge-Bibliothek'),
-       ('Humboldt-Bibliothek'),
-       ('Margarete-Kubicka-Bibliothek'),
-       ('Stadtteilbibliothek Haselhorst'),
-       ('Thomas-Dehler-Bibliothek');
+       ('Gertrud Junge Bibliothek'),
+       ('Gertrud Junge Bibliothek'),
+       ('Humboldt Bibliothek'),
+       ('Margarete Kubicka Bibliothek');
 
 INSERT INTO library_address(library_id, city, street, house_number, osm_link)
 VALUES (1, 'Berlin', 'Berkaer Str.', 7, 'Die Adolf-Reichwein-Bibliothek bleibt an gesetzlichen Feiertagen geschlossen'),
