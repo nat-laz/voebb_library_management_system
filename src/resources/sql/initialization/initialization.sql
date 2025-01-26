@@ -10,8 +10,7 @@ CREATE TABLE IF NOT EXISTS product
     product_link_to_emedia  TEXT,
     product_age_restriction INT,
     product_photo_link      TEXT NOT NULL DEFAULT ('default'),
-    product_note            TEXT,
-    is_physical             BOOLEAN
+    product_note            TEXT
 );
 
 
@@ -154,7 +153,6 @@ CREATE TABLE IF NOT EXISTS borrow
 (
     client_id          INT  NOT NULL,
     item_id            INT  NOT NULL,
-    library_id         INT,
     borrow_start_date  DATE NOT NULL DEFAULT CURRENT_DATE,
     borrow_due_date    DATE NOT NULL, -- set update based on how many days the item can be borrowed; update if user extends
     borrow_return_date DATE,
@@ -168,7 +166,6 @@ CREATE TABLE IF NOT EXISTS reservation
 (
     client_id              INT  NOT NULL,
     item_id                INT  NOT NULL,
-    library_id             INT,
     reservation_start_date DATE NOT NULL DEFAULT CURRENT_DATE,
     reservation_due_date   DATE NOT NULL DEFAULT CURRENT_DATE + INTERVAL '3 days',
     PRIMARY KEY (client_id, item_id, reservation_start_date)
@@ -196,18 +193,17 @@ FROM product_item
 
 CREATE OR REPLACE VIEW main_page_info AS
 SELECT product.product_id,
-       -- check if product is_physical; digital products always available
+       -- check if product is_physical
        CASE
-           WHEN product.is_physical THEN
+           WHEN product.product_link_to_emedia IS NOT NULL THEN TRUE -- set digital products always available
+           ELSE
                CASE
-                   WHEN EXISTS (SELECT 1 -- updated this query to get re-freshed data after borrowing/reservation
+                   WHEN EXISTS (SELECT 1
                                 FROM full_item_info
                                 WHERE full_item_info.product_id = product.product_id
-                                  AND full_item_info.item_status_name = 'available')
-                       THEN TRUE
-                   ELSE FALSE END
-           ELSE
-               TRUE -- set digital always available
+                                  AND full_item_info.item_status_name = 'available') THEN TRUE
+                   ELSE FALSE
+                   END
            END  AS avaliable,
        media_format_name,
        product.product_title,
@@ -284,26 +280,21 @@ ALTER TABLE reservation
 ALTER TABLE reservation
     ADD FOREIGN KEY (item_id) REFERENCES product_item (item_id);
 
-ALTER TABLE reservation
-    ADD FOREIGN KEY (library_id) REFERENCES library (library_id);
-
 ALTER TABLE borrow
     ADD FOREIGN KEY (item_id) REFERENCES product_item (item_id);
 
 ALTER TABLE borrow
     ADD FOREIGN KEY (client_id) REFERENCES client_relation (client_id);
 
-ALTER TABLE borrow
-    ADD FOREIGN KEY (library_id) REFERENCES library (library_id);
 
 
---  EXTENSIONS:
+-------------------- EXTENSIONS: --------------------
 
 -- pg_trgm - support for similarity of text using trigram matching
 CREATE EXTENSION IF NOT EXISTS pg_trgm;
 
 
--- INDEXES
+-------------------- INDEXES: --------------------
 -- GIN Index for full-search and similarity on product title, notes
 CREATE INDEX idx_gin_product_search
     ON product
@@ -320,7 +311,13 @@ CREATE INDEX idx_gin_creator_search
                    creator_lastname gin_trgm_ops
             );
 
------------------- UTILS ------------------
+-- PARTIAL Index: improves performance when checking if the product is physical or not
+CREATE INDEX idx_product_link_to_emedia_not_null
+    ON product (product_link_to_emedia)
+    WHERE product_link_to_emedia IS NOT NULL;
+
+
+-------------------- UTILS: --------------------
 
 -- VALIDATION IN BORROW AND RESERVE TRANSACTIONS
 CREATE OR REPLACE FUNCTION validate_item_and_client_ids(v_item_id INT, v_client_id INT)
@@ -366,11 +363,12 @@ DECLARE
     v_valid_library BOOLEAN;
 BEGIN
     -- check if the item is physical or digital
-    v_is_physical := (SELECT is_physical
-                      FROM product
-                      WHERE product_id = (SELECT product_id
-                                          FROM product_item
-                                          WHERE item_id = v_item_id));
+    v_is_physical := NOT EXISTS (SELECT 1
+                                 FROM product
+                                 WHERE product_id = (SELECT product_id
+                                                     FROM product_item
+                                                     WHERE item_id = v_item_id)
+                                   AND product_link_to_emedia IS NOT NULL);
 
     -- exception for attempt to reserve digital product
     IF v_context = 'reservation' AND NOT v_is_physical THEN

@@ -13,8 +13,8 @@ $$
         PERFORM validate_item_location(v_item_id, v_library_id, 'reservation');
 
         -- Reserve new item
-        INSERT INTO reservation(client_id, item_id, library_id)
-        VALUES (v_client_id, v_item_id, v_library_id);
+        INSERT INTO reservation(client_id, item_id)
+        VALUES (v_client_id, v_item_id);
 
         -- Change status for item
         UPDATE product_item
