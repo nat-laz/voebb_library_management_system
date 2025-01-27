@@ -242,6 +242,9 @@ VALUES ('Harry Potter and the Philosopher Stone', 1997, 1, NULL, NULL), -- J.K. 
        ('Core Java Volume I: Fundamentals', 2020, 2, 'https://example.com/core-java-fundamentals',
         'E-book edition by Cay S. Horstmann and Gary Cornell');
 
+INSERT INTO product(product_title, product_year, media_format_id)
+VALUES ('TEST availability', 2025, 1);
+
 INSERT INTO book (product_id, book_pages)
 VALUES (1, 223),  -- J.K. Rowling
        (2, 328),  -- George Orwell
@@ -253,7 +256,8 @@ VALUES (1, 223),  -- J.K. Rowling
        (8, 489),  -- Charles Dickens
        (9, 127),  -- Ernest Hemingway
        (10, 194), -- Virginia Woolf
-       (11, 328); -- George Orwell
+       (11, 328), -- George Orwell
+       (17, 999); -- TEST
 
 INSERT INTO video(product_id, video_duration_in_minutes)
 VALUES (14, 125); -- Video tutorial based on the book by Kathy Sierra and Bert Bates
@@ -284,8 +288,8 @@ VALUES (1, 1, 2),
        (14, 14, 6), -- Bert Bates, Co-Author of Head First Java
        (15, 15, 2), -- Brian Goetz, Author of Java Concurrency in Practice
        (16, 16, 6), -- Cay S. Horstmann, Co-Author of Core Java Volume I: Fundamentals
-       (17, 16, 6); -- Gary Cornell, Co-Author of Core Java Volume I: Fundamentals
-;
+       (17, 16, 6), -- Gary Cornell, Co-Author of Core Java Volume I: Fundamentals
+       (2, 17, 2); -- TEST physic product availability
 
 INSERT INTO language (language_name)
 VALUES ('English'),
@@ -450,7 +454,10 @@ VALUES (1, 1),
 
        (15, 1),
        (15, 1),
-       (15, 1);
+       (15, 1),
+
+       (17, 1),
+       (17, 1);
 
 
 INSERT INTO item_location (item_id, library_id)
@@ -504,7 +511,9 @@ VALUES (1, 3),
        (51, 4),
        (52, 2),
        (53, 5),
-       (54, 1);
+       (54, 1),
+       (55, 2),
+       (56, 3);
 
 INSERT INTO country_relation (country_id, product_id)
 VALUES

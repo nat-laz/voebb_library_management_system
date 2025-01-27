@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS product
     product_note            TEXT
 );
 
+
 CREATE TABLE IF NOT EXISTS media_format
 (
     media_format_id      SERIAL PRIMARY KEY,
@@ -160,6 +161,7 @@ CREATE TABLE IF NOT EXISTS borrow
 );
 
 
+
 CREATE TABLE IF NOT EXISTS reservation
 (
     client_id              INT  NOT NULL,
@@ -168,28 +170,6 @@ CREATE TABLE IF NOT EXISTS reservation
     reservation_due_date   DATE NOT NULL DEFAULT CURRENT_DATE + INTERVAL '3 days',
     PRIMARY KEY (client_id, item_id, reservation_start_date)
 );
-
-CREATE VIEW main_page_info AS
-SELECT product.product_id,
-       CASE
-           WHEN EXISTS (select * FROM full_item_info WHERE item_status_name = 'available')
-               THEN TRUE
-           ELSE FALSE END AS avaliable,
-       media_format_name,
-       product.product_title,
-       product.product_year,
-       product.product_photo_link,
-       array_agg(case
-                     when fii.item_status_name = 'available' -- available
-                         then fii.library_name
-           end)           as available_in_libraries
-FROM product
-         LEFT JOIN media_format ON media_format.media_format_id = product.media_format_id
-         LEFT JOIN full_item_info AS fii ON fii.product_id = product.product_id
-group by product.product_id, product.product_title,
-         product.product_year,
-         product.product_photo_link,
-         media_format_name;
 
 CREATE VIEW full_item_info AS
 SELECT product_item.item_id,
@@ -209,6 +189,39 @@ FROM product_item
          JOIN item_location ON product_item.item_id = item_location.item_id
          JOIN library ON item_location.library_id = library.library_id
          JOIN library_address ON library.library_id = library_address.library_id;
+
+
+CREATE OR REPLACE VIEW main_page_info AS
+SELECT product.product_id,
+       -- check if product is_physical
+       CASE
+           WHEN product.product_link_to_emedia IS NOT NULL THEN TRUE -- set digital products always available
+           ELSE
+               CASE
+                   WHEN EXISTS (SELECT 1
+                                FROM full_item_info
+                                WHERE full_item_info.product_id = product.product_id
+                                  AND full_item_info.item_status_name = 'available') THEN TRUE
+                   ELSE FALSE
+                   END
+           END  AS avaliable,
+       media_format_name,
+       product.product_title,
+       product.product_year,
+       product.product_photo_link,
+       array_agg(case
+                     when fii.item_status_name = 'available' -- available
+                         then fii.library_name
+           end) as available_in_libraries
+FROM product
+         LEFT JOIN media_format ON media_format.media_format_id = product.media_format_id
+         LEFT JOIN full_item_info AS fii ON fii.product_id = product.product_id
+group by product.product_id, product.product_title,
+         product.product_year,
+         product.product_photo_link,
+         media_format_name;
+
+
 
 ALTER TABLE product
     ADD FOREIGN KEY (media_format_id) REFERENCES media_format (media_format_id);
@@ -272,3 +285,112 @@ ALTER TABLE borrow
 
 ALTER TABLE borrow
     ADD FOREIGN KEY (client_id) REFERENCES client_relation (client_id);
+
+
+
+-------------------- EXTENSIONS: --------------------
+
+-- pg_trgm - support for similarity of text using trigram matching
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+
+
+-------------------- INDEXES: --------------------
+-- GIN Index for full-search and similarity on product title, notes
+CREATE INDEX idx_gin_product_search
+    ON product
+        USING GIN (
+                   product_title gin_trgm_ops,
+                   product_note gin_trgm_ops
+            );
+
+-- GIN Index for full-search on creator names
+CREATE INDEX idx_gin_creator_search
+    ON creator
+        USING GIN (
+                   creator_forename gin_trgm_ops,
+                   creator_lastname gin_trgm_ops
+            );
+
+-- PARTIAL Index: improves performance when checking if the product is physical or not
+CREATE INDEX idx_product_link_to_emedia_not_null
+    ON product (product_link_to_emedia)
+    WHERE product_link_to_emedia IS NOT NULL;
+
+
+-------------------- UTILS: --------------------
+
+-- VALIDATION IN BORROW AND RESERVE TRANSACTIONS
+CREATE OR REPLACE FUNCTION validate_item_and_client_ids(v_item_id INT, v_client_id INT)
+    RETURNS VOID AS
+$$
+BEGIN
+    IF v_item_id IS NULL THEN
+        RAISE EXCEPTION 'Item ID cannot be null';
+    END IF;
+
+    IF v_client_id IS NULL THEN
+        RAISE EXCEPTION 'Client ID cannot be null';
+    END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+-- check if item is not reserved and not borrowed
+CREATE OR REPLACE FUNCTION validate_item_status(v_item_id INT)
+    RETURNS VOID AS
+$$
+DECLARE
+    v_item_status_id INT;
+BEGIN
+
+    v_item_status_id := (SELECT product_item.item_status_id
+                         FROM product_item
+                         WHERE item_id = v_item_id);
+
+    IF v_item_status_id = 2 THEN
+        RAISE EXCEPTION 'Item with id % is already borrowed', v_item_id;
+    ELSIF v_item_status_id = 3 THEN
+        RAISE EXCEPTION 'Item with id % is reserved', v_item_id;
+    END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+-- check if product is physical and exists in specific library
+CREATE OR REPLACE FUNCTION validate_item_location(v_item_id INT, v_library_id INT, v_context TEXT)
+    RETURNS VOID AS
+$$
+DECLARE
+    v_is_physical   BOOLEAN;
+    v_valid_library BOOLEAN;
+BEGIN
+    -- check if the item is physical or digital
+    v_is_physical := NOT EXISTS (SELECT 1
+                                 FROM product
+                                 WHERE product_id = (SELECT product_id
+                                                     FROM product_item
+                                                     WHERE item_id = v_item_id)
+                                   AND product_link_to_emedia IS NOT NULL);
+
+    -- exception for attempt to reserve digital product
+    IF v_context = 'reservation' AND NOT v_is_physical THEN
+        RAISE EXCEPTION 'This item % can be borrowed immediately.', v_item_id;
+    END IF;
+
+    -- skip validation for digital products during borrowing transaction
+    IF NOT v_is_physical THEN
+        RETURN;
+    END IF;
+
+
+    -- validate relationship between library_id <=> item_id
+    v_valid_library := EXISTS (SELECT 1
+                               FROM item_location
+                               WHERE item_id = v_item_id
+                                 AND library_id = v_library_id);
+
+    -- exception if the library_id is invalid
+    IF NOT v_valid_library THEN
+        RAISE EXCEPTION 'Library with id % does not contain item with id %', v_library_id, v_item_id;
+    END IF;
+
+END;
+$$ LANGUAGE plpgsql;
