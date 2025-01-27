@@ -1,5 +1,14 @@
 # DB Design for VOEBB
 
+### Table of Contents
+
+- [Features](#Features)
+- [Database Schema](#database-schema)
+- [Views and Utilities](#views-and-utilities)
+- [Available SQL Queries](#available-sql-queries)
+- [Project Developer Team](#project-developer-team)
+- [Setup Instructions](#setup-instructions)
+
 ## Links
 
 [reference](https://www.voebb.de/)

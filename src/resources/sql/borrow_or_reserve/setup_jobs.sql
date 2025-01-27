@@ -12,9 +12,9 @@ SELECT *
 FROM cron.job;
 
 -- unschedule a specific job by jobid:
-SELECT cron.unschedule(jobid)
-FROM cron.job
-WHERE jobid = 3;
+-- SELECT cron.unschedule(jobid)
+-- FROM cron.job
+-- WHERE jobid = 4;
 
 -- delete job by jobid
 -- DELETE FROM cron.job where jobid = 1;
