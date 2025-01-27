@@ -8,7 +8,7 @@ SELECT cron.schedule(
 
 
 -- check if job is created
-select *
+SELECT *
 FROM cron.job;
 
 -- unschedule a specific job by jobid:

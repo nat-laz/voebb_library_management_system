@@ -1,24 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="SqlDialectMappings">
-    <file url="file://$PROJECT_DIR$/src/resources/sql/borrow_or_reserve/borrow_item_transaction.sql" dialect="PostgreSQL" />
-    <file url="file://$PROJECT_DIR$/src/resources/sql/borrow_or_reserve/borrowing.sql" dialect="PostgreSQL" />
     <file url="file://$PROJECT_DIR$/src/resources/sql/borrow_or_reserve/cancel_expired_reservation_script.sql" dialect="PostgreSQL" />
-    <file url="file://$PROJECT_DIR$/src/resources/sql/borrow_or_reserve/cancel_reservation_transaction.sql" dialect="PostgreSQL" />
-    <file url="file://$PROJECT_DIR$/src/resources/sql/borrow_or_reserve/reservation.sql" dialect="PostgreSQL" />
-    <file url="file://$PROJECT_DIR$/src/resources/sql/borrow_or_reserve/reserve_item_transaction.sql" dialect="PostgreSQL" />
-    <file url="file://$PROJECT_DIR$/src/resources/sql/borrow_or_reserve/return_item_transaction.sql" dialect="PostgreSQL" />
     <file url="file://$PROJECT_DIR$/src/resources/sql/borrow_or_reserve/setup_jobs.sql" dialect="PostgreSQL" />
-    <file url="file://$PROJECT_DIR$/src/resources/sql/borrow_or_reserve/show_borrow_history.sql" dialect="PostgreSQL" />
     <file url="file://$PROJECT_DIR$/src/resources/sql/borrow_or_reserve/update_borrow_due_date_script.sql" dialect="PostgreSQL" />
     <file url="file://$PROJECT_DIR$/src/resources/sql/initialization/data.sql" dialect="PostgreSQL" />
-    <file url="file://$PROJECT_DIR$/src/resources/sql/initialization/generate_clients.sql" dialect="PostgreSQL" />
+    <file url="file://$PROJECT_DIR$/src/resources/sql/initialization/generate_random_data.sql" dialect="PostgreSQL" />
+    <file url="file://$PROJECT_DIR$/src/resources/sql/initialization/initial_service_data.sql" dialect="PostgreSQL" />
     <file url="file://$PROJECT_DIR$/src/resources/sql/initialization/initialization.sql" dialect="PostgreSQL" />
     <file url="file://$PROJECT_DIR$/src/resources/sql/library-statistic/statistic_by_library.sql" dialect="PostgreSQL" />
     <file url="file://$PROJECT_DIR$/src/resources/sql/list_physic_product/availability_and_location.sql" dialect="PostgreSQL" />
     <file url="file://$PROJECT_DIR$/src/resources/sql/search_input/by_creator.sql" dialect="PostgreSQL" />
-    <file url="file://$PROJECT_DIR$/src/resources/sql/search_input/by_full_text_search.sql" dialect="PostgreSQL" />
-    <file url="file://$PROJECT_DIR$/src/resources/sql/search_input/by_language.sql" dialect="PostgreSQL" />
     <file url="file://$PROJECT_DIR$/src/resources/sql/search_input/by_media_format.sql" dialect="PostgreSQL" />
     <file url="file://$PROJECT_DIR$/src/resources/sql/search_input/by_title.sql" dialect="PostgreSQL" />
     <file url="file://$PROJECT_DIR$/src/resources/sql/search_input/by_year_range.sql" dialect="PostgreSQL" />

@@ -5,9 +5,9 @@ FROM reservation;
 -- CHECK RESERVATION TABLE MORE DETAILS
 SELECT reservation.client_id,
        product_item.item_id,
+       CONCAT(client.client_forename || ' ' || client.client_lastname, ', ') AS creator_full_name,
        item_status_name,
        product.product_title,
-       concat(client.client_forename || ' ' || client.client_lastname, ', ') AS creator_full_name,
        reservation_start_date,
        reservation_due_date
 FROM reservation
