@@ -160,8 +160,6 @@ CREATE TABLE IF NOT EXISTS borrow
     PRIMARY KEY (client_id, item_id, borrow_start_date)
 );
 
-
-
 CREATE TABLE IF NOT EXISTS reservation
 (
     client_id              INT  NOT NULL,
@@ -191,6 +189,7 @@ FROM product_item
          JOIN library_address ON library.library_id = library_address.library_id;
 
 CREATE OR REPLACE VIEW main_page_info AS
+
 SELECT product.product_id,
        -- check if product is_physical
        CASE
@@ -314,19 +313,6 @@ CREATE INDEX idx_product_link_to_emedia_not_null
 -------------------- UTILS: --------------------
 
 -- VALIDATION IN BORROW AND RESERVE TRANSACTIONS
-CREATE OR REPLACE FUNCTION validate_item_and_client_ids(v_item_id INT, v_client_id INT)
-    RETURNS VOID AS
-$$
-BEGIN
-    IF v_item_id IS NULL THEN
-        RAISE EXCEPTION 'Item ID cannot be null';
-    END IF;
-
-    IF v_client_id IS NULL THEN
-        RAISE EXCEPTION 'Client ID cannot be null';
-    END IF;
-END;
-$$ LANGUAGE plpgsql;
 
 -- check if item is not reserved and not borrowed
 CREATE OR REPLACE FUNCTION validate_item_status(v_item_id INT)
@@ -345,46 +331,5 @@ BEGIN
     ELSIF v_item_status_id = 3 THEN
         RAISE EXCEPTION 'Item with id % is reserved', v_item_id;
     END IF;
-END;
-$$ LANGUAGE plpgsql;
-
--- check if product is physical and exists in specific library
-CREATE OR REPLACE FUNCTION validate_item_location(v_item_id INT, v_library_id INT, v_context TEXT)
-    RETURNS VOID AS
-$$
-DECLARE
-    v_is_physical   BOOLEAN;
-    v_valid_library BOOLEAN;
-BEGIN
-    -- check if the item is physical or digital
-    v_is_physical := NOT EXISTS (SELECT 1
-                                 FROM product
-                                 WHERE product_id = (SELECT product_id
-                                                     FROM product_item
-                                                     WHERE item_id = v_item_id)
-                                   AND product_link_to_emedia IS NOT NULL);
-
-    -- exception for attempt to reserve digital product
-    IF v_context = 'reservation' AND NOT v_is_physical THEN
-        RAISE EXCEPTION 'This item % can be borrowed immediately.', v_item_id;
-    END IF;
-
-    -- skip validation for digital products during borrowing transaction
-    IF NOT v_is_physical THEN
-        RETURN;
-    END IF;
-
-
-    -- validate relationship between library_id <=> item_id
-    v_valid_library := EXISTS (SELECT 1
-                               FROM item_location
-                               WHERE item_id = v_item_id
-                                 AND library_id = v_library_id);
-
-    -- exception if the library_id is invalid
-    IF NOT v_valid_library THEN
-        RAISE EXCEPTION 'Library with id % does not contain item with id %', v_library_id, v_item_id;
-    END IF;
-
 END;
 $$ LANGUAGE plpgsql;

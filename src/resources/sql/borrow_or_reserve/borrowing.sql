@@ -22,4 +22,6 @@ FROM borrow
          JOIN product_item ON borrow.item_id = product_item.item_id
          JOIN product ON product_item.product_id = product.product_id
          JOIN item_status ON product_item.item_status_id = item_status.item_status_id
-         JOIN item_location ON product_item.item_id = item_location.item_id;
+         JOIN item_location ON product_item.item_id = item_location.item_id
+ORDER BY item_id;
+
