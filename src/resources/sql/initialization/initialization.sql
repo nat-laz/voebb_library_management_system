@@ -189,8 +189,18 @@ FROM product_item
          JOIN library_address ON library.library_id = library_address.library_id;
 
 CREATE OR REPLACE VIEW main_page_info AS
-
-SELECT product.product_id,
+SELECT CASE
+           WHEN product.product_link_to_emedia IS NOT NULL THEN TRUE -- set digital products always available
+           ELSE
+               CASE
+                   WHEN EXISTS (SELECT 1
+                                FROM product_item
+                                WHERE product_item.product_id = product.product_id
+                                  AND product_item.item_status_id = 1) THEN TRUE -- 1 is available
+                   ELSE FALSE
+                   END
+           END                                                                         AS avaliable,
+       product.product_id,
        media_format_name,
        product.product_title,
        product.product_year,
@@ -282,7 +292,7 @@ CREATE EXTENSION IF NOT EXISTS pg_trgm;
 -- GIN Index for full-search and similarity on product title, notes
 CREATE INDEX idx_gin_product_search
     ON product
-        USING GIN (
+        USING gin (
                    product_title gin_trgm_ops,
                    product_note gin_trgm_ops
             );
@@ -290,7 +300,7 @@ CREATE INDEX idx_gin_product_search
 -- GIN Index for full-search on creator names
 CREATE INDEX idx_gin_creator_search
     ON creator
-        USING GIN (
+        USING gin (
                    creator_forename gin_trgm_ops,
                    creator_lastname gin_trgm_ops
             );
