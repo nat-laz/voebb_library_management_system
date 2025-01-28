@@ -6,9 +6,9 @@ SELECT avaliable,
        product_photo_link,
        available_in_libraries
 FROM main_page_info
-         LEFT JOIN creator_relation ON creator_relation.product_id = main_page_info.product_id
-         LEFT JOIN creator ON creator.creator_id = creator_relation.creator_id
-         LEFT JOIN creator_role ON creator.creator_id = creator_role.role_id
+         JOIN creator_relation ON creator_relation.product_id = main_page_info.product_id
+         JOIN creator ON creator.creator_id = creator_relation.creator_id
+         JOIN creator_role ON creator.creator_id = creator_role.role_id
 WHERE creator_forename ILIKE '%' || ? || '%'
-   OR creator_lastname ILIKE '%' || ? || '%'
+  AND creator_lastname ILIKE '%' || ? || '%'
 LIMIT 22 OFFSET 0;

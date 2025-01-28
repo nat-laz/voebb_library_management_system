@@ -11,7 +11,7 @@ handle library collections, reservations, borrowing processes, and detailed stat
 - [Database Schema](#database-schema)
 - [Views and Utilities](#views-and-utilities)
 - [Setup Instructions](#setup-instructions)
-- [ SQL Queries](#sql-queries)
+- [Interesting SQL Queries](#sql-queries)
 
 ### Features
 
@@ -56,8 +56,13 @@ The schema includes **23 tables** to manage library operations efficiently. Key 
 
 1. ```full_item_info``` - provides detailed information about item location, statuses, and associated libraries,
    including their addresses.
+
 2. ```main_page_info``` - aggregates product data to determine lists of libraries where an item is
-   available.
+   available. 
+
+   <details> <summary>VOEBB Screenshot</summary> <p align="center"> <img src="screenshots/voebb.png" width="1000"/> </p> </details>
+
+   <details> <summary>main-page-info</summary> <p align="center"> <img src="screenshots/main_page_info.png" width="1000"/> </p> </details>
 
 #### Utility Function
 
@@ -73,14 +78,22 @@ The schema includes **23 tables** to manage library operations efficiently. Key 
 2. PARTIAL Index
     - ```idx_product_link_to_emedia_not_null``` - optimizes queries on digital items (product_link_to_emedia).
 
-### Project Developer Team
-
-- [Alex Bruch](https://github.com/bruch-alex)
-- [Natalie Lazarev](https://github.com/nat-laz)
 
 ### Setup Instructions
 
-1. Create database:
+<details> 
+  <summary>Click to see</summary>
+
+1.  **Clone the Repository**
+    
+    ```java
+     git clone git@github.com:nat-laz/voebb_library_management_system.git
+     cd voebb_library_management_system
+    ```
+
+2. **Create database:**
+  
+   Start ```psql``` and create the database:
 
     ```sql
     CREATE DATABASE <your-db-name>;
@@ -88,37 +101,158 @@ The schema includes **23 tables** to manage library operations efficiently. Key 
 
 2. Run schema script:
 
-    ```sql
-    psql -d <your-database-name> -f initialization/initialization.sql
+    ```
+    psql -d <your-database-name> -f </absolute/path/to/voebb_library_management_system/>initialization/initial_service_data.sql
     ```
 
 3. Populate tables with sample data:
 
-    ```sql
-    psql -d <your-database-name> -f initialization/initial_service_data.sql
+    ```
+    psql -d <your-database-name> -f </absolute/path/to/voebb_library_management_system/>initialization/setup_jobs.sql
     ```
     
-    ```sql
-    psql -d <your-database-name> -f initialization/setup_jobs.sql
+    ```
+    psql -d <your-database-name> -f </absolute/path/to/voebb_library_management_system/>initialization/cancel_expired_reservation_script.sql
     ```
     
-    ```sql
-    psql -d <your-database-name> -f initialization/cancel_expired_reservation_script.sql
+    ```
+    psql -d <your-database-name> -f </absolute/path/to/voebb_library_management_system/>initialization/cancel_expired_reservation_script.sql
     ```
     
-    ```sql
-    psql -d <your-database-name> -f initialization/cancel_expired_reservation_script.sql
+    ```
+    psql -d <your-database-name> -f </absolute/path/to/voebb_library_management_system/>initialization/cancel_expired_reservation_script.sql
     ```
     
-    ```sql
-    psql -d <your-database-name> -f initialization/cancel_expired_reservation_script.sql
     ```
-    
-    ```sql
-    psql -d <your-database-name> -f initialization/generate_random_data.sql
+    psql -d <your-database-name> -f </absolute/path/to/voebb_library_management_system/>initialization/generate_random_data.sql
     ```
+    Alternatively, connect your database using IntelliJ's Datasource tool and run the scripts in the following [execution order](/src/resources/sql/initialization/execution_order.md).
+
+</details>
 
 
+### Interesting SQL Queries
 
-### Play with queries 
+Search product by different criteria (e.g title, creator name, language, range between years)
 
+Thanks to `View` our search queries can be really simple, for example:
+
+<details> 
+  <summary>Search product by title</summary>
+
+```sql
+SELECT *
+FROM main_page_info
+WHERE product_title ILIKE '%' || ? || '%'
+LIMIT 22;
+```
+
+</details>
+
+<details> 
+  <summary>List products by creator</summary>
+
+```sql
+SELECT avaliable,
+       media_format_name,
+       product_title,
+       CONCAT(creator.creator_forename || ' ' || creator.creator_lastname) AS creator_full_name,
+       product_year,
+       product_photo_link,
+       available_in_libraries
+FROM main_page_info
+         LEFT JOIN creator_relation ON creator_relation.product_id = main_page_info.product_id
+         LEFT JOIN creator ON creator.creator_id = creator_relation.creator_id
+         LEFT JOIN creator_role ON creator.creator_id = creator_role.role_id
+WHERE creator_forename ILIKE '%' || ? || '%'
+   OR creator_lastname ILIKE '%' || ? || '%'
+LIMIT 22 OFFSET 0;
+```
+
+</details>
+
+<details> 
+    <summary>Full-text search product across multiple tables</summary>
+    
+ ```sql
+CREATE OR REPLACE FUNCTION search_across_multiple_tables(search_term TEXT)
+RETURNS TABLE
+            (
+                title                  TEXT,
+                creator_forename       TEXT,
+                creator_lastname       TEXT,
+                avaliable              BOOLEAN,
+                format                 TEXT,
+                year                   SMALLINT,
+                product_link_to_emedia TEXT,
+                available_in_libraries TEXT,
+                description            TEXT
+            )
+    AS
+$$
+BEGIN
+        RETURN QUERY
+            SELECT mpi.product_title                                 AS title,
+                   c.creator_forename,
+                   c.creator_lastname,
+                   mpi.avaliable,
+                   mpi.media_format_name                             AS format,
+                   mpi.product_year                                  AS year,
+                   p.product_link_to_emedia,
+                   ARRAY_TO_STRING(mpi.available_in_libraries, ', ') AS available_in_libraries,
+                   p.product_note                                    AS description
+            FROM main_page_info mpi
+                     LEFT JOIN creator_relation cr ON cr.product_id = mpi.product_id
+                     LEFT JOIN creator c ON c.creator_id = cr.creator_id
+                     LEFT JOIN product p ON cr.product_id = p.product_id
+            WHERE mpi.product_title % search_term
+               OR p.product_note % search_term
+               OR c.creator_forename % search_term
+               OR c.creator_lastname % search_term
+               OR mpi.product_title ILIKE '%' || search_term || '%'
+               OR p.product_note ILIKE '%' || search_term || '%'
+               OR c.creator_forename ILIKE '%' || search_term || '%'
+               OR c.creator_lastname ILIKE '%' || search_term || '%'
+            ORDER BY GREATEST(
+                    similarity(LOWER(mpi.product_title), LOWER(search_term)),
+                    similarity(LOWER(p.product_note), LOWER(search_term)),
+                    similarity(LOWER(c.creator_forename), LOWER(search_term)),
+                    similarity(LOWER(c.creator_lastname), LOWER(search_term))
+                     ) DESC
+            LIMIT 100;
+    END;
+    $$ LANGUAGE plpgsql;
+    
+    
+    -- TEST QUERY
+    SELECT *
+    FROM search_across_multiple_tables(:search_term);
+    
+```
+</details>
+
+<details> 
+  <summary> Get the availability status and library location details for a specific product</summary>
+
+```sql
+SELECT DISTINCT fii.item_status_name,
+                fii.product_title                                   AS title,
+                CONCAT(c.creator_forename, ' ', c.creator_lastname) AS creator_full_name,
+                fii.library_name,
+                fii.city,
+                fii.street,
+                fii.house_number,
+                la.osm_link,
+                fii.item_id
+FROM full_item_info fii
+         LEFT JOIN creator_relation cr ON cr.product_id = fii.product_id
+         LEFT JOIN creator c ON c.creator_id = cr.creator_id
+         LEFT JOIN library_address la ON la.library_id = fii.library_id
+WHERE fii.product_id = ?;
+
+```
+
+### Project Developer Team
+
+- [Alex Bruch](https://github.com/bruch-alex)
+- [Natalie Lazarev](https://github.com/nat-laz)

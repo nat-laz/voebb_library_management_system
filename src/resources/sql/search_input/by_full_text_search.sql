@@ -26,7 +26,7 @@ BEGIN
                mpi.media_format_name                             AS format,
                mpi.product_year                                  AS year,
                p.product_link_to_emedia,
-               array_to_string(mpi.available_in_libraries, ', ') AS available_in_libraries,
+               ARRAY_TO_STRING(mpi.available_in_libraries, ', ') AS available_in_libraries,
                p.product_note                                    AS description
         FROM main_page_info mpi
                  LEFT JOIN creator_relation cr ON cr.product_id = mpi.product_id
@@ -41,10 +41,10 @@ BEGIN
            OR c.creator_forename ILIKE '%' || search_term || '%'
            OR c.creator_lastname ILIKE '%' || search_term || '%'
         ORDER BY GREATEST(
-                         similarity(lower(mpi.product_title), lower(search_term)),
-                         similarity(lower(p.product_note), lower(search_term)),
-                         similarity(lower(c.creator_forename), lower(search_term)),
-                         similarity(lower(c.creator_lastname), lower(search_term))
+                         similarity(LOWER(mpi.product_title), LOWER(search_term)),
+                         similarity(LOWER(p.product_note), LOWER(search_term)),
+                         similarity(LOWER(c.creator_forename), LOWER(search_term)),
+                         similarity(LOWER(c.creator_lastname), LOWER(search_term))
                  ) DESC
         LIMIT 100;
 END;

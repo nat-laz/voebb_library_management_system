@@ -32,7 +32,7 @@ FROM GENERATE_SERIES(1, 100000) s(i);
 DO
 $$
     DECLARE
-        r_product record;
+        r_product RECORD;
     BEGIN
         -- Create link for ebook, duration for video and book_details for book
         FOR r_product IN (SELECT *
@@ -137,11 +137,7 @@ $$
                     -- check if item is not reserved and not borrowed
                     v_item_status_id := (SELECT product_item.item_status_id FROM product_item WHERE item_id = i);
 
-                    IF (v_item_status_id = 2) THEN
-                        RAISE EXCEPTION 'Item with id % is already borrowed', i;
-                    ELSIF (v_item_status_id = 3) THEN
-                        RAISE EXCEPTION 'Item with id % is reserved', i;
-                    END IF;
+                    PERFORM validate_item_status(v_item_status_id);
 
                     -- Borrow new item
                     INSERT INTO borrow(client_id, item_id)

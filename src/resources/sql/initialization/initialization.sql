@@ -205,7 +205,8 @@ SELECT CASE
        product.product_title,
        product.product_year,
        product.product_photo_link,
-       ARRAY_AGG(library.library_name) FILTER ( WHERE item_status_name = 'available' ) AS available_in_libraries
+       ARRAY_AGG(library.library_name) FILTER ( WHERE item_status_name = 'available' ) AS available_in_libraries,
+       product_link_to_emedia
 FROM product
          JOIN media_format ON media_format.media_format_id = product.media_format_id
          JOIN product_item pi ON product.product_id = pi.product_id
@@ -280,15 +281,11 @@ ALTER TABLE borrow
 ALTER TABLE borrow
     ADD FOREIGN KEY (client_id) REFERENCES client_relation (client_id);
 
-
-
 -------------------- EXTENSIONS: --------------------
 
 -- pg_trgm - support for similarity of text using trigram matching
 CREATE EXTENSION IF NOT EXISTS pg_trgm;
 CREATE EXTENSION btree_gin;
-
-
 
 -------------------- UTILS: --------------------
 
