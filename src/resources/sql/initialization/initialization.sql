@@ -191,26 +191,17 @@ FROM product_item
 CREATE OR REPLACE VIEW main_page_info AS
 
 SELECT product.product_id,
-       -- check if product is_physical
-       CASE
-           WHEN product.product_link_to_emedia IS NOT NULL THEN TRUE -- set digital products always available
-           ELSE
-               CASE
-                   WHEN EXISTS (SELECT 1
-                                FROM full_item_info
-                                WHERE full_item_info.product_id = product.product_id
-                                  AND full_item_info.item_status_name = 'available') THEN TRUE
-                   ELSE FALSE
-                   END
-           END  AS avaliable,
        media_format_name,
        product.product_title,
        product.product_year,
        product.product_photo_link,
-       ARRAY_AGG(fii.library_name) FILTER ( WHERE fii.item_status_name = 'available' ) AS available_in_libraries
+       ARRAY_AGG(library.library_name) FILTER ( WHERE item_status_name = 'available' ) AS available_in_libraries
 FROM product
-         LEFT JOIN media_format ON media_format.media_format_id = product.media_format_id
-         LEFT JOIN full_item_info AS fii ON fii.product_id = product.product_id
+         JOIN media_format ON media_format.media_format_id = product.media_format_id
+         JOIN product_item pi ON product.product_id = pi.product_id
+         JOIN item_location ON item_location.item_id = pi.item_id
+         JOIN library ON library.library_id = item_location.library_id
+         JOIN item_status i ON pi.item_status_id = i.item_status_id
 GROUP BY product.product_id, product.product_title,
          product.product_year,
          product.product_photo_link,
