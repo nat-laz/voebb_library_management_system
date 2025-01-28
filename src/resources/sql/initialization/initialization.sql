@@ -286,6 +286,7 @@ ALTER TABLE borrow
 
 -- pg_trgm - support for similarity of text using trigram matching
 CREATE EXTENSION IF NOT EXISTS pg_trgm;
+CREATE EXTENSION btree_gin;
 
 
 -------------------- INDEXES: --------------------
@@ -310,6 +311,8 @@ CREATE INDEX idx_product_link_to_emedia_not_null
     ON product (product_link_to_emedia)
     WHERE product_link_to_emedia IS NOT NULL;
 
+-- B-TREE Index: improves performance when searching by title
+CREATE INDEX idx_product_title ON product USING gin (product_title);
 
 -------------------- UTILS: --------------------
 
