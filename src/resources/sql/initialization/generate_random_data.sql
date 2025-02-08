@@ -1,21 +1,15 @@
 -- generate 100_000 clients
-INSERT INTO client (client_forename,
-                    client_lastname,
-                    client_date_of_birth,
-                    client_registration_date,
-                    client_email,
-                    client_password)
-SELECT 'Forename_' || i,
-       'Lastname_' || i,
-       (CURRENT_DATE - (FLOOR(RANDOM() * 18250) + 6570) * INTERVAL '1 day')::DATE,
-       (CURRENT_DATE - (FLOOR(RANDOM() * 365 * 10) + 365 * 10) * INTERVAL '1 day')::DATE,
-       'client_' || i || '@example.com',
-       'Password_' || pg_catalog.floor(RANDOM() * 100)::INT
-FROM GENERATE_SERIES(1, 100000) s(i);
-
-INSERT INTO client_relation (client_id)
-SELECT i
-FROM GENERATE_SERIES(1, 100000) s(i);
+SELECT insert_client(s.client_forename,
+                     s.client_lastname,
+                     s.client_date_of_birth,
+                     s.client_email,
+                     s.client_password)
+FROM (SELECT 'Forename_' || i                                                           AS client_forename,
+             'Lastname_' || i                                                           AS client_lastname,
+             (CURRENT_DATE - (FLOOR(RANDOM() * 18250) + 6570) * INTERVAL '1 day')::DATE AS client_date_of_birth,
+             'client_' || i || '@example.com'                                           AS client_email,
+             'Password_' || pg_catalog.floor(RANDOM() * 100)::INT                       AS client_password
+      FROM GENERATE_SERIES(1, 100000) s(i)) AS s;
 
 -- Generate 100_000 products
 INSERT INTO product(product_title,

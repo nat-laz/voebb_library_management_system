@@ -130,10 +130,10 @@ CREATE TABLE IF NOT EXISTS library_address
 CREATE TABLE IF NOT EXISTS client
 (
     client_id                       SERIAL PRIMARY KEY,
-    client_forename                 TEXT        NOT NULL,
-    client_lastname                 TEXT        NOT NULL,
+    client_first_name               TEXT        NOT NULL,
+    client_second_name              TEXT        NOT NULL,
     client_date_of_birth            DATE        NOT NULL,
-    client_registration_date        DATE        NOT NULL, -- 1 year
+    client_registration_date        DATE        NOT NULL DEFAULT CURRENT_DATE,
     client_membership_expiring_date DATE,
     client_email                    TEXT UNIQUE NOT NULL CHECK (client_email ~* '^[A-Za-z0-9._+%-]+@[A-Za-z0-9.-]+[.][A-Za-z]+$'),
     client_password                 TEXT        NOT NULL CHECK (LENGTH(client_password) > 8)
